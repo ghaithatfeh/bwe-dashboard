@@ -63,7 +63,7 @@ const DashboardOverview = () => {
       <div>
         <h2 className="text-3xl font-bold tracking-tight">Dashboard Overview</h2>
         <p className="text-muted-foreground">
-          Welcome to your product management dashboard
+          Welcome to your BWE dashboard
         </p>
       </div>
 

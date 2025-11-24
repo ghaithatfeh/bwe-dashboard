@@ -54,7 +54,7 @@ const Dashboard = () => {
         <div className="flex-1 flex flex-col">
           <header className="h-16 border-b bg-card flex items-center justify-between px-6">
             <SidebarTrigger />
-            <h1 className="text-xl font-semibold">Product Management Dashboard</h1>
+            <h1 className="text-xl font-semibold">BWE Dashboard</h1>
             <Button variant="outline" size="sm" onClick={handleSignOut}>
               <LogOut className="h-4 w-4 mr-2" />
               Sign Out
