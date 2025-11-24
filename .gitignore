@@ -9,6 +9,7 @@ lerna-debug.log*
 
 .env
 supabase/config.toml
+supabase/.temp
 node_modules
 dist
 dist-ssr
