@@ -27,6 +27,7 @@ export interface Product {
   additional_colors: number;
   is_featured: boolean;
   top_products: boolean;
+  primary_image_url: string | null;
   created_at: string;
   updated_at: string;
 }

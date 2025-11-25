@@ -1,4 +1,4 @@
-import { Edit, Trash2, Star } from "lucide-react";
+import { Edit, Trash2, Star, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -49,6 +49,7 @@ export function ProductsTable({
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>Image</TableHead>
             <TableHead>Code</TableHead>
             <TableHead>Title (EN)</TableHead>
             <TableHead>Category</TableHead>
@@ -62,6 +63,19 @@ export function ProductsTable({
         <TableBody>
           {products.map((product) => (
             <TableRow key={product.id}>
+              <TableCell>
+                {product.primary_image_url ? (
+                  <img
+                    src={product.primary_image_url}
+                    alt={product.title_en}
+                    className="w-10 h-10 object-cover rounded border border-border"
+                  />
+                ) : (
+                  <div className="w-10 h-10 bg-muted rounded border border-border flex items-center justify-center">
+                    <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                )}
+              </TableCell>
               <TableCell className="font-medium">{product.code}</TableCell>
               <TableCell>{product.title_en}</TableCell>
               <TableCell>

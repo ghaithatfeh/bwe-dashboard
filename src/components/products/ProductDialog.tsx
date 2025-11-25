@@ -17,6 +17,8 @@ import { Product } from "@/pages/Products";
 import { Category } from "@/pages/Categories";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card } from "@/components/ui/card";
+import { Upload, Trash2, Star, Image as ImageIcon } from "lucide-react";
 
 interface ProductDialogProps {
   open: boolean;
@@ -55,6 +57,10 @@ export function ProductDialog({
     top_products: false,
   });
   const [colorInput, setColorInput] = useState("");
+  const [images, setImages] = useState<string[]>([]);
+  const [primaryImage, setPrimaryImage] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
 
   useEffect(() => {
     if (product) {
@@ -77,6 +83,8 @@ export function ProductDialog({
         is_featured: product.is_featured,
         top_products: product.top_products,
       });
+      setImages(product.images || []);
+      setPrimaryImage(product.primary_image_url);
     } else {
       setFormData({
         code: "",
@@ -97,19 +105,158 @@ export function ProductDialog({
         is_featured: false,
         top_products: false,
       });
+      setImages([]);
+      setPrimaryImage(null);
     }
   }, [product]);
+
+  const uploadFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    const uploadedUrls: string[] = [];
+
+    try {
+      for (const file of Array.from(files)) {
+        if (!file.type.startsWith("image/")) {
+          toast({
+            variant: "destructive",
+            title: "Invalid file",
+            description: `${file.name} is not an image file`,
+          });
+          continue;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+          toast({
+            variant: "destructive",
+            title: "File too large",
+            description: `${file.name} exceeds 5MB limit`,
+          });
+          continue;
+        }
+
+        const fileExt = file.name.split(".").pop();
+        const fileName = `${formData.code || "temp"}_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = fileName;
+
+        const { error: uploadError } = await supabase.storage
+          .from("product-images")
+          .upload(filePath, file);
+
+        if (uploadError) {
+          toast({
+            variant: "destructive",
+            title: "Upload failed",
+            description: uploadError.message,
+          });
+          continue;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from("product-images")
+          .getPublicUrl(filePath);
+
+        uploadedUrls.push(publicUrl);
+      }
+
+      const newImages = [...images, ...uploadedUrls];
+      setImages(newImages);
+
+      if (!primaryImage && uploadedUrls.length > 0) {
+        setPrimaryImage(uploadedUrls[0]);
+      }
+
+      toast({
+        title: "Success",
+        description: `${uploadedUrls.length} image(s) uploaded successfully`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Upload failed",
+        description: "An error occurred during upload",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    await uploadFiles(e.target.files);
+  };
+
+  const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      await uploadFiles(e.dataTransfer.files);
+    }
+  };
+
+  const handleDeleteImage = async (imageUrl: string) => {
+    try {
+      const fileName = imageUrl.split("/").pop();
+      if (fileName) {
+        await supabase.storage.from("product-images").remove([fileName]);
+      }
+
+      const newImages = images.filter((img) => img !== imageUrl);
+      setImages(newImages);
+
+      if (primaryImage === imageUrl) {
+        setPrimaryImage(newImages.length > 0 ? newImages[0] : null);
+      }
+
+      toast({
+        title: "Success",
+        description: "Image deleted successfully",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete image",
+      });
+    }
+  };
+
+  const handleSetPrimary = (imageUrl: string) => {
+    setPrimaryImage(imageUrl);
+    toast({
+      title: "Primary image set",
+      description: "This image is now the primary product image",
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
+    const productData = {
+      ...formData,
+      images,
+      primary_image_url: primaryImage,
+    };
+
     const { error } = product
       ? await supabase
           .from("products")
-          .update(formData)
+          .update(productData)
           .eq("id", product.id)
-      : await supabase.from("products").insert([formData]);
+      : await supabase.from("products").insert([productData]);
 
     if (error) {
       toast({
@@ -156,9 +303,10 @@ export function ProductDialog({
         <ScrollArea className="max-h-[calc(90vh-120px)]">
           <form onSubmit={handleSubmit} className="space-y-4 pr-4">
             <Tabs defaultValue="basic">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="basic">Basic Info</TabsTrigger>
                 <TabsTrigger value="specs">Specifications</TabsTrigger>
+                <TabsTrigger value="images">Images</TabsTrigger>
                 <TabsTrigger value="additional">Additional</TabsTrigger>
               </TabsList>
 
@@ -273,7 +421,7 @@ export function ProductDialog({
 
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="length">Length</Label>
+                    <Label htmlFor="length">Length (mm)</Label>
                     <Input
                       id="length"
                       type="number"
@@ -289,7 +437,7 @@ export function ProductDialog({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="weight">Weight</Label>
+                    <Label htmlFor="weight">Weight (g)</Label>
                     <Input
                       id="weight"
                       type="number"
@@ -305,7 +453,7 @@ export function ProductDialog({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="diameter">Diameter</Label>
+                    <Label htmlFor="diameter">Diameter (mm)</Label>
                     <Input
                       id="diameter"
                       type="number"
@@ -323,7 +471,7 @@ export function ProductDialog({
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="quantity_bag">Quantity per Bag</Label>
+                    <Label htmlFor="quantity_bag">Quantity per Bag (pcs)</Label>
                     <Input
                       id="quantity_bag"
                       type="number"
@@ -339,7 +487,7 @@ export function ProductDialog({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="quantity_box">Quantity per Box</Label>
+                    <Label htmlFor="quantity_box">Quantity per Box (pcs)</Label>
                     <Input
                       id="quantity_box"
                       type="number"
@@ -356,9 +504,95 @@ export function ProductDialog({
                 </div>
               </TabsContent>
 
+              <TabsContent value="images" className="space-y-4">
+                <div className="space-y-4">
+                  <div 
+                    className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                      dragActive 
+                        ? "border-primary bg-primary/5" 
+                        : "border-border"
+                    }`}
+                    onDragEnter={handleDrag}
+                    onDragLeave={handleDrag}
+                    onDragOver={handleDrag}
+                    onDrop={handleDrop}
+                  >
+                    <input
+                      type="file"
+                      id="image-upload"
+                      className="hidden"
+                      multiple
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={uploading}
+                    />
+                    <label
+                      htmlFor="image-upload"
+                      className="cursor-pointer flex flex-col items-center gap-2"
+                    >
+                      <Upload className="h-10 w-10 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">
+                          {uploading ? "Uploading..." : "Click to upload or drag and drop"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          PNG, JPG, WEBP up to 5MB
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+
+                  {images.length > 0 && (
+                    <ScrollArea className={images.length > 3 ? "h-[250px]" : ""} >
+                      <div className="grid grid-cols-3 gap-4">
+                        {images.map((imageUrl, index) => (
+                          <Card key={index} className="relative group overflow-hidden">
+                            <img
+                              src={imageUrl}
+                              alt={`Product ${index + 1}`}
+                              className="w-full h-32 object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                              <Button
+                                size="icon"
+                                type="button"
+                                variant={primaryImage === imageUrl ? "default" : "secondary"}
+                                onClick={() => handleSetPrimary(imageUrl)}
+                              >
+                                <Star className={primaryImage === imageUrl ? "fill-current" : ""} />
+                              </Button>
+                              <Button
+                                size="icon"
+                                type="button"
+                                variant="destructive"
+                                onClick={() => handleDeleteImage(imageUrl)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            {primaryImage === imageUrl && (
+                              <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded">
+                                Primary
+                              </div>
+                            )}
+                          </Card>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  )}
+
+                  {images.length === 0 && (
+                    <div className="text-center pt-6 text-muted-foreground">
+                      <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">No images uploaded yet</p>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+
               <TabsContent value="additional" className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Colors</Label>
+                  <Label>Available Colors</Label>
                   <div className="flex gap-2">
                     <Input
                       placeholder="Enter color hex code (e.g., #ff0000)"
