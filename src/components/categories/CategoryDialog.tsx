@@ -38,6 +38,8 @@ export function CategoryDialog({
     parent_id: null as number | null,
   });
 
+  const hasSubcategories = category?.categories?.length;
+
   useEffect(() => {
     if (category) {
       setFormData({
@@ -131,30 +133,32 @@ export function CategoryDialog({
               required
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="parent_id">Parent Category (Optional)</Label>
-            <Select
-              value={formData.parent_id?.toString() || "none"}
-              onValueChange={(value) =>
-                setFormData({
-                  ...formData,
-                  parent_id: value === "none" ? null : parseInt(value),
-                })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select parent category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None (Main Category)</SelectItem>
-                {parentCategories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id.toString()}>
-                    {cat.title_en}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {!hasSubcategories && (
+            <div className="space-y-2">
+              <Label htmlFor="parent_id">Parent Category (Optional)</Label>
+              <Select
+                value={formData.parent_id?.toString() || "none"}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    parent_id: value === "none" ? null : parseInt(value),
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select parent category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None (Main Category)</SelectItem>
+                  {parentCategories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id.toString()}>
+                      {cat.title_en}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <div className="flex justify-end gap-2">
             <Button
               type="button"

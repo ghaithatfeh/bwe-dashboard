@@ -14,6 +14,7 @@ export interface Category {
   parent_id: number | null;
   created_at: string;
   updated_at: string;
+  categories?: Category[];
 }
 
 const Categories = () => {
@@ -27,8 +28,9 @@ const Categories = () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("categories")
-      .select("*")
+      .select("*, categories(*)")
       .order("id", { ascending: true });
+      console.log(data);
 
     if (error) {
       toast({
