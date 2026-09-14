@@ -19,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Upload, Trash2, Star, Image as ImageIcon } from "lucide-react";
+import { TRANSPARENT_COLOR, getColorSwatchStyle } from "@/lib/colors";
 
 interface ProductDialogProps {
   open: boolean;
@@ -275,12 +276,19 @@ export function ProductDialog({
     setLoading(false);
   };
 
-  const addColor = () => {
-    if (colorInput && !formData.colors.includes(colorInput)) {
-      setFormData({ ...formData, colors: [...formData.colors, colorInput] });
-      setColorInput("");
+  const addColorValue = (value: string) => {
+    const color = value.trim().toLowerCase();
+    if (color && !formData.colors.includes(color)) {
+      setFormData({ ...formData, colors: [...formData.colors, color] });
     }
   };
+
+  const addColor = () => {
+    addColorValue(colorInput);
+    setColorInput("");
+  };
+
+  const addTransparentColor = () => addColorValue(TRANSPARENT_COLOR);
 
   const removeColor = (color: string) => {
     setFormData({
@@ -602,6 +610,14 @@ export function ProductDialog({
                     <Button type="button" onClick={addColor}>
                       Add
                     </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={addTransparentColor}
+                      disabled={formData.colors.includes(TRANSPARENT_COLOR)}
+                    >
+                      Transparent
+                    </Button>
                   </div>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {formData.colors.map((color) => (
@@ -611,7 +627,7 @@ export function ProductDialog({
                       >
                         <div
                           className="w-4 h-4 rounded-full border"
-                          style={{ backgroundColor: color }}
+                          style={getColorSwatchStyle(color)}
                         />
                         <span className="text-sm">{color}</span>
                         <button
