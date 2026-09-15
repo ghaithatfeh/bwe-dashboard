@@ -19,7 +19,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Upload, Trash2, Star, Image as ImageIcon } from "lucide-react";
-import { TRANSPARENT_COLOR, getColorSwatchStyle } from "@/lib/colors";
+import {
+  COLORFUL_COLOR,
+  TRANSPARENT_COLOR,
+  getColorSwatchStyle,
+} from "@/lib/colors";
 
 interface ProductDialogProps {
   open: boolean;
@@ -289,6 +293,7 @@ export function ProductDialog({
   };
 
   const addTransparentColor = () => addColorValue(TRANSPARENT_COLOR);
+  const addColorfulColor = () => addColorValue(COLORFUL_COLOR);
 
   const removeColor = (color: string) => {
     setFormData({
@@ -617,6 +622,14 @@ export function ProductDialog({
                       disabled={formData.colors.includes(TRANSPARENT_COLOR)}
                     >
                       Transparent
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={addColorfulColor}
+                      disabled={formData.colors.includes(COLORFUL_COLOR)}
+                    >
+                      Colorful
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2 mt-2">
