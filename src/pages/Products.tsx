@@ -6,6 +6,7 @@ import { ProductDialog } from "@/components/products/ProductDialog";
 import { ProductsTable } from "@/components/products/ProductsTable";
 import { useToast } from "@/hooks/use-toast";
 import { Category } from "./Categories";
+import { normalizeColors, type ProductColor } from "@/lib/colors";
 
 export interface Product {
   id: number;
@@ -23,7 +24,7 @@ export interface Product {
   quantity_bag: number;
   quantity_box: number;
   images: string[];
-  colors: string[];
+  colors: ProductColor[] | null;
   additional_colors: number;
   is_featured: boolean;
   top_products: boolean;
@@ -54,7 +55,12 @@ const Products = () => {
         description: "Failed to fetch products",
       });
     } else {
-      setProducts(productsResult.data || []);
+      setProducts(
+        (productsResult.data || []).map((p) => ({
+          ...p,
+          colors: normalizeColors(p.colors),
+        }))
+      );
     }
 
     if (categoriesResult.error) {

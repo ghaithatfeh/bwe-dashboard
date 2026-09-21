@@ -57,7 +57,7 @@ export type Database = {
           additional_colors: number | null
           category_id: number
           code: string
-          colors: string[] | null
+          colors: Json | null
           created_at: string | null
           diameter: number | null
           id: number
@@ -81,7 +81,7 @@ export type Database = {
           additional_colors?: number | null
           category_id: number
           code: string
-          colors?: string[] | null
+          colors?: Json | null
           created_at?: string | null
           diameter?: number | null
           id?: number
@@ -105,7 +105,7 @@ export type Database = {
           additional_colors?: number | null
           category_id?: number
           code?: string
-          colors?: string[] | null
+          colors?: Json | null
           created_at?: string | null
           diameter?: number | null
           id?: number

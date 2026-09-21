@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { Product } from "@/pages/Products";
+import type { Json } from "@/integrations/supabase/types";
 import { Category } from "@/pages/Categories";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -23,6 +24,10 @@ import {
   COLORFUL_COLOR,
   TRANSPARENT_COLOR,
   getColorSwatchStyle,
+  normalizeColors,
+  SENTINEL_COLOR_NAMES,
+  type ProductColor,
+  type ProductColorNames,
 } from "@/lib/colors";
 
 interface ProductDialogProps {
@@ -56,7 +61,7 @@ export function ProductDialog({
     diameter: null as number | null,
     quantity_bag: 0,
     quantity_box: 0,
-    colors: [] as string[],
+    colors: [] as ProductColor[],
     additional_colors: 0,
     is_featured: false,
     top_products: false,
@@ -83,7 +88,7 @@ export function ProductDialog({
         diameter: product.diameter,
         quantity_bag: product.quantity_bag,
         quantity_box: product.quantity_box,
-        colors: product.colors,
+        colors: normalizeColors(product.colors),
         additional_colors: product.additional_colors,
         is_featured: product.is_featured,
         top_products: product.top_products,
@@ -252,6 +257,7 @@ export function ProductDialog({
 
     const productData = {
       ...formData,
+      colors: formData.colors as unknown as Json,
       images,
       primary_image_url: primaryImage,
     };
@@ -280,11 +286,21 @@ export function ProductDialog({
     setLoading(false);
   };
 
+  const hasColor = (value: string) =>
+    formData.colors.some((c) => c.value === value);
+
   const addColorValue = (value: string) => {
-    const color = value.trim().toLowerCase();
-    if (color && !formData.colors.includes(color)) {
-      setFormData({ ...formData, colors: [...formData.colors, color] });
-    }
+    const normalized = value.trim().toLowerCase();
+    if (!normalized || hasColor(normalized)) return;
+    const names: ProductColorNames = SENTINEL_COLOR_NAMES[normalized] ?? {
+      name_en: "",
+      name_ar: "",
+      name_fr: "",
+    };
+    setFormData({
+      ...formData,
+      colors: [...formData.colors, { value: normalized, ...names }],
+    });
   };
 
   const addColor = () => {
@@ -295,10 +311,23 @@ export function ProductDialog({
   const addTransparentColor = () => addColorValue(TRANSPARENT_COLOR);
   const addColorfulColor = () => addColorValue(COLORFUL_COLOR);
 
-  const removeColor = (color: string) => {
+  const updateColorName = (
+    value: string,
+    field: keyof ProductColorNames,
+    name: string
+  ) => {
     setFormData({
       ...formData,
-      colors: formData.colors.filter((c) => c !== color),
+      colors: formData.colors.map((c) =>
+        c.value === value ? { ...c, [field]: name } : c
+      ),
+    });
+  };
+
+  const removeColor = (value: string) => {
+    setFormData({
+      ...formData,
+      colors: formData.colors.filter((c) => c.value !== value),
     });
   };
 
@@ -619,7 +648,7 @@ export function ProductDialog({
                       type="button"
                       variant="outline"
                       onClick={addTransparentColor}
-                      disabled={formData.colors.includes(TRANSPARENT_COLOR)}
+                      disabled={hasColor(TRANSPARENT_COLOR)}
                     >
                       Transparent
                     </Button>
@@ -627,26 +656,56 @@ export function ProductDialog({
                       type="button"
                       variant="outline"
                       onClick={addColorfulColor}
-                      disabled={formData.colors.includes(COLORFUL_COLOR)}
+                      disabled={hasColor(COLORFUL_COLOR)}
                     >
                       Colorful
                     </Button>
                   </div>
-                  <div className="flex flex-wrap gap-2 mt-2">
+                  <div className="space-y-2 mt-2">
                     {formData.colors.map((color) => (
                       <div
-                        key={color}
-                        className="flex items-center gap-2 bg-secondary px-3 py-1 rounded-md"
+                        key={color.value}
+                        className="flex flex-wrap items-center gap-2 bg-secondary px-3 py-2 rounded-md"
                       >
-                        <div
-                          className="w-4 h-4 rounded-full border"
-                          style={getColorSwatchStyle(color)}
+                        <div className="flex items-center gap-2 w-36 shrink-0">
+                          <div
+                            className="w-5 h-5 rounded-full border shrink-0"
+                            style={getColorSwatchStyle(color.value)}
+                          />
+                          <span className="text-sm font-mono truncate">
+                            {color.value}
+                          </span>
+                        </div>
+                        <Input
+                          className="flex-1 min-w-[8rem]"
+                          placeholder="Name (EN)"
+                          value={color.name_en}
+                          onChange={(e) =>
+                            updateColorName(color.value, "name_en", e.target.value)
+                          }
                         />
-                        <span className="text-sm">{color}</span>
+                        <Input
+                          className="flex-1 min-w-[8rem]"
+                          dir="rtl"
+                          placeholder="الاسم (AR)"
+                          value={color.name_ar}
+                          onChange={(e) =>
+                            updateColorName(color.value, "name_ar", e.target.value)
+                          }
+                        />
+                        <Input
+                          className="flex-1 min-w-[8rem]"
+                          placeholder="Nom (FR, optional)"
+                          value={color.name_fr}
+                          onChange={(e) =>
+                            updateColorName(color.value, "name_fr", e.target.value)
+                          }
+                        />
                         <button
                           type="button"
-                          onClick={() => removeColor(color)}
-                          className="text-destructive hover:text-destructive/80"
+                          onClick={() => removeColor(color.value)}
+                          className="text-destructive hover:text-destructive/80 px-1"
+                          aria-label={`Remove ${color.value}`}
                         >
                           ×
                         </button>
