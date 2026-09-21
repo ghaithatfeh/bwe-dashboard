@@ -18,6 +18,8 @@ interface ProductsTableProps {
   loading: boolean;
   onEdit: (product: Product) => void;
   onDelete: (id: number) => void;
+  /** Shown when the list is empty; defaults to the "create your first product" hint. */
+  emptyMessage?: string;
 }
 
 export function ProductsTable({
@@ -26,6 +28,7 @@ export function ProductsTable({
   loading,
   onEdit,
   onDelete,
+  emptyMessage,
 }: ProductsTableProps) {
   if (loading) {
     return <div className="text-center py-8">Loading products...</div>;
@@ -34,7 +37,8 @@ export function ProductsTable({
   if (products.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        No products found. Create your first product to get started.
+        {emptyMessage ??
+          "No products found. Create your first product to get started."}
       </div>
     );
   }

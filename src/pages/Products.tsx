@@ -1,12 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Search, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { ProductDialog } from "@/components/products/ProductDialog";
 import { ProductsTable } from "@/components/products/ProductsTable";
+import { ListPagination } from "@/components/ListPagination";
+import { usePagination } from "@/hooks/usePagination";
 import { useToast } from "@/hooks/use-toast";
 import { Category } from "./Categories";
 import { normalizeColors, type ProductColor } from "@/lib/colors";
+import { filterProductsBySearch } from "@/lib/productSearch";
 
 export interface Product {
   id: number;
@@ -33,12 +37,15 @@ export interface Product {
   updated_at: string;
 }
 
+const PRODUCTS_PER_PAGE = 10;
+
 const Products = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
 
   const fetchData = async () => {
@@ -59,7 +66,7 @@ const Products = () => {
         (productsResult.data || []).map((p) => ({
           ...p,
           colors: normalizeColors(p.colors),
-        }))
+        })),
       );
     }
 
@@ -79,6 +86,26 @@ const Products = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const filteredProducts = useMemo(
+    () => filterProductsBySearch(products, searchQuery),
+    [products, searchQuery],
+  );
+
+  const {
+    currentPage,
+    totalPages,
+    totalItems,
+    paginatedItems,
+    pageRange,
+    goToPage,
+    firstItemIndex,
+    lastItemIndex,
+  } = usePagination({
+    items: filteredProducts,
+    pageSize: PRODUCTS_PER_PAGE,
+    resetKey: searchQuery.trim().toLowerCase(),
+  });
 
   const handleEdit = (product: Product) => {
     setEditingProduct(product);
@@ -110,26 +137,64 @@ const Products = () => {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Products</h2>
-          <p className="text-muted-foreground">
-            Manage your product catalog
-          </p>
+          <p className="text-muted-foreground">Manage your product catalog</p>
         </div>
-        <Button onClick={() => {
-          setEditingProduct(null);
-          setDialogOpen(true);
-        }}>
+        <Button
+          onClick={() => {
+            setEditingProduct(null);
+            setDialogOpen(true);
+          }}
+        >
           <Plus className="h-4 w-4 mr-2" />
           Add Product
         </Button>
       </div>
 
+      <div className="relative w-full sm:max-w-sm">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          type="search"
+          placeholder="Search by name or code..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-9 pr-9"
+          aria-label="Search products"
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            onClick={() => setSearchQuery("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            aria-label="Clear search"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+
       <ProductsTable
-        products={products}
+        products={paginatedItems}
         categories={categories}
         loading={loading}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        emptyMessage={
+          searchQuery ? `No products match "${searchQuery.trim()}".` : undefined
+        }
       />
+
+      {!loading && (
+        <ListPagination
+          itemLabel="products"
+          currentPage={currentPage}
+          totalPages={totalPages}
+          pageRange={pageRange}
+          firstItemIndex={firstItemIndex}
+          lastItemIndex={lastItemIndex}
+          totalItems={totalItems}
+          onPageChange={goToPage}
+        />
+      )}
 
       <ProductDialog
         open={dialogOpen}

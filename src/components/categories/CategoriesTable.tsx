@@ -12,7 +12,10 @@ import { Badge } from "@/components/ui/badge";
 import { Category } from "@/pages/Categories";
 
 interface CategoriesTableProps {
+  /** Rows to render (may be a single page). */
   categories: Category[];
+  /** Full list, used to resolve parent names; defaults to `categories`. */
+  allCategories?: Category[];
   loading: boolean;
   onEdit: (category: Category) => void;
   onDelete: (id: number) => void;
@@ -20,6 +23,7 @@ interface CategoriesTableProps {
 
 export function CategoriesTable({
   categories,
+  allCategories = categories,
   loading,
   onEdit,
   onDelete,
@@ -38,7 +42,7 @@ export function CategoriesTable({
 
   const getCategoryName = (id: number | null) => {
     if (!id) return null;
-    const category = categories.find((c) => c.id === id);
+    const category = allCategories.find((c) => c.id === id);
     return category?.title_en;
   };
 
