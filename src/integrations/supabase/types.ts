@@ -135,15 +135,97 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          address: string | null
+          created_at: string
+          email: string | null
+          first_name: string
+          id: string
+          last_name: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          first_name?: string
+          id: string
+          last_name?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          first_name?: string
+          id?: string
+          last_name?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      admin_delete_user: {
+        Args: { target_user_id: string }
+        Returns: undefined
+      }
+      admin_list_users: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          address: string | null
+          banned: boolean
+          created_at: string
+          email: string | null
+          first_name: string
+          id: string
+          is_admin: boolean
+          last_name: string
+          last_sign_in_at: string | null
+          phone: string | null
+          providers: string[]
+        }[]
+      }
+      admin_set_user_admin: {
+        Args: { make_admin: boolean; target_user_id: string }
+        Returns: undefined
+      }
+      admin_set_user_banned: {
+        Args: { banned: boolean; target_user_id: string }
+        Returns: undefined
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -270,6 +352,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin"],
+    },
   },
 } as const

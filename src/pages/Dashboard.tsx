@@ -7,6 +7,7 @@ import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { Outlet } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { LogOut } from "lucide-react";
+import { isAdmin } from "@/lib/admin";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -14,11 +15,14 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) {
         navigate("/auth");
-      } else {
+      } else if (await isAdmin()) {
         setLoading(false);
+      } else {
+        // The sign-out triggers the redirect to /auth below.
+        await supabase.auth.signOut();
       }
     });
 

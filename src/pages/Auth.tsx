@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { isAdmin } from "@/lib/admin";
+import type { Session } from "@supabase/supabase-js";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -15,21 +17,30 @@ const Auth = () => {
   const [password, setPassword] = useState("");
 
   useEffect(() => {
-    // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate("/dashboard");
-      }
-    });
+    const handleSession = async (session: Session | null) => {
+      if (!session) return;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
+      if (await isAdmin()) {
         navigate("/dashboard");
+        return;
       }
+
+      await supabase.auth.signOut();
+      toast({
+        variant: "destructive",
+        title: "Access denied",
+        description: "This account does not have admin access",
+      });
+    };
+
+    // Also fires on subscribe (INITIAL_SESSION), covering already-logged-in users.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Defer: calling Supabase inside this callback can deadlock the client.
+      setTimeout(() => handleSession(session), 0);
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();

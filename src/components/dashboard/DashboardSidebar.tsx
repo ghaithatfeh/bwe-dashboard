@@ -1,4 +1,4 @@
-import { LayoutDashboard, FolderTree, Package } from "lucide-react";
+import { LayoutDashboard, FolderTree, Package, Users } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
   Sidebar,
@@ -26,6 +26,11 @@ const menuItems = [
     title: "Products",
     url: "/dashboard/products",
     icon: Package,
+  },
+  {
+    title: "Users",
+    url: "/dashboard/users",
+    icon: Users,
   },
 ];
 
