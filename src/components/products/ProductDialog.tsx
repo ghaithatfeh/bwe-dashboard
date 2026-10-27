@@ -59,6 +59,7 @@ export function ProductDialog({
     length: null as number | null,
     weight: null as number | null,
     diameter: null as number | null,
+    price: null as number | null,
     quantity_bag: 0,
     quantity_box: 0,
     colors: [] as ProductColor[],
@@ -86,6 +87,7 @@ export function ProductDialog({
         length: product.length,
         weight: product.weight,
         diameter: product.diameter,
+        price: product.price,
         quantity_bag: product.quantity_bag,
         quantity_box: product.quantity_box,
         colors: normalizeColors(product.colors),
@@ -108,6 +110,7 @@ export function ProductDialog({
         length: null,
         weight: null,
         diameter: null,
+        price: null,
         quantity_bag: 0,
         quantity_box: 0,
         colors: [],
@@ -543,6 +546,24 @@ export function ProductDialog({
                       required
                     />
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="price">Price (MAD)</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="Leave empty to hide price on the website"
+                    value={formData.price ?? ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        price: e.target.value ? parseFloat(e.target.value) : null,
+                      })
+                    }
+                  />
                 </div>
               </TabsContent>
 

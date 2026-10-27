@@ -60,6 +60,7 @@ export function ProductsTable({
             <TableHead>Material</TableHead>
             <TableHead>Qty/Bag</TableHead>
             <TableHead>Qty/Box</TableHead>
+            <TableHead>Price (MAD)</TableHead>
             <TableHead>Featured</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -88,6 +89,7 @@ export function ProductsTable({
               <TableCell>{product.material_en}</TableCell>
               <TableCell>{product.quantity_bag}</TableCell>
               <TableCell>{product.quantity_box}</TableCell>
+              <TableCell>{product.price ?? "—"}</TableCell>
               <TableCell>
                 <div className="flex gap-1">
                   {product.is_featured && (

@@ -67,6 +67,7 @@ export type Database = {
           material_ar: string
           material_en: string
           material_fr: string
+          price: number | null
           primary_image_url: string | null
           quantity_bag: number
           quantity_box: number
@@ -91,6 +92,7 @@ export type Database = {
           material_ar: string
           material_en: string
           material_fr: string
+          price?: number | null
           primary_image_url?: string | null
           quantity_bag: number
           quantity_box: number
@@ -115,6 +117,7 @@ export type Database = {
           material_ar?: string
           material_en?: string
           material_fr?: string
+          price?: number | null
           primary_image_url?: string | null
           quantity_bag?: number
           quantity_box?: number
