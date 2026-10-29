@@ -52,6 +52,108 @@ export type Database = {
           },
         ]
       }
+      order_items: {
+        Row: {
+          color: Json | null
+          created_at: string
+          id: number
+          image_url: string | null
+          order_id: number
+          product_code: string
+          product_id: number | null
+          quantity: number
+          quantity_box: number
+          title_ar: string
+          title_en: string
+          title_fr: string
+          unit_price: number | null
+        }
+        Insert: {
+          color?: Json | null
+          created_at?: string
+          id?: never
+          image_url?: string | null
+          order_id: number
+          product_code: string
+          product_id?: number | null
+          quantity: number
+          quantity_box: number
+          title_ar: string
+          title_en: string
+          title_fr: string
+          unit_price?: number | null
+        }
+        Update: {
+          color?: Json | null
+          created_at?: string
+          id?: never
+          image_url?: string | null
+          order_id?: number
+          product_code?: string
+          product_id?: number | null
+          quantity?: number
+          quantity_box?: number
+          title_ar?: string
+          title_en?: string
+          title_fr?: string
+          unit_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          address: string
+          created_at: string
+          customer_name: string
+          id: number
+          notes: string | null
+          phone: string
+          status: Database["public"]["Enums"]["order_status"]
+          total: number | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          customer_name: string
+          id?: never
+          notes?: string | null
+          phone: string
+          status?: Database["public"]["Enums"]["order_status"]
+          total?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          customer_name?: string
+          id?: never
+          notes?: string | null
+          phone?: string
+          status?: Database["public"]["Enums"]["order_status"]
+          total?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           additional_colors: number | null
@@ -214,6 +316,17 @@ export type Database = {
           providers: string[]
         }[]
       }
+      admin_set_order_item_price: {
+        Args: { p_item_id: number; p_price: number }
+        Returns: undefined
+      }
+      admin_set_order_status: {
+        Args: {
+          p_order_id: number
+          p_status: Database["public"]["Enums"]["order_status"]
+        }
+        Returns: undefined
+      }
       admin_set_user_admin: {
         Args: { make_admin: boolean; target_user_id: string }
         Returns: undefined
@@ -226,9 +339,26 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      place_order: {
+        Args: {
+          p_address: string
+          p_customer_name: string
+          p_items: Json
+          p_notes?: string
+          p_phone: string
+        }
+        Returns: number
+      }
     }
     Enums: {
       app_role: "admin"
+      order_status:
+        | "new"
+        | "confirmed"
+        | "processing"
+        | "delivering"
+        | "completed"
+        | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -357,6 +487,14 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin"],
+      order_status: [
+        "new",
+        "confirmed",
+        "processing",
+        "delivering",
+        "completed",
+        "cancelled",
+      ],
     },
   },
 } as const
