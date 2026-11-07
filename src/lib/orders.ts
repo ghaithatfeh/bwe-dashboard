@@ -1,4 +1,5 @@
 import type { Database } from "@/integrations/supabase/types";
+import i18n from "@/i18n";
 
 export type OrderStatus = Database["public"]["Enums"]["order_status"];
 export type Order = Database["public"]["Tables"]["orders"]["Row"];
@@ -10,24 +11,8 @@ export const ORDER_FLOW: OrderStatus[] = ["new", "confirmed", "processing", "del
 
 export const ORDER_STATUSES: OrderStatus[] = [...ORDER_FLOW, "cancelled"];
 
-export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
-  new: "New",
-  confirmed: "Confirmed",
-  processing: "Processing",
-  delivering: "Delivering",
-  completed: "Completed",
-  cancelled: "Cancelled",
-};
-
-/** Label for the button that moves an order to this status. */
-export const ORDER_STATUS_ACTIONS: Record<OrderStatus, string> = {
-  new: "Mark as new",
-  confirmed: "Confirm order",
-  processing: "Start processing",
-  delivering: "Send for delivery",
-  completed: "Mark as completed",
-  cancelled: "Cancel order",
-};
+// Status labels and action names are translated: see `orders.statuses` and
+// `orders.actions` in src/i18n/locales.
 
 export const ORDER_STATUS_CLASSES: Record<OrderStatus, string> = {
   new: "border-transparent bg-blue-100 text-blue-800 hover:bg-blue-100",
@@ -54,7 +39,7 @@ export const totalBoxes = (order: OrderWithItems) =>
   order.order_items.reduce((sum, item) => sum + item.quantity, 0);
 
 export const formatMAD = (value: number) =>
-  new Intl.NumberFormat("en-MA", {
+  new Intl.NumberFormat(i18n.language === "ar" ? "ar-MA" : "en-MA", {
     style: "currency",
     currency: "MAD",
     minimumFractionDigits: Number.isInteger(value) ? 0 : 2,

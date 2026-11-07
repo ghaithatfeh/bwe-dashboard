@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import { ArrowRight, Eye, MoreHorizontal, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +18,6 @@ import {
 } from "@/components/ui/table";
 import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
 import {
-  ORDER_STATUS_ACTIONS,
   type OrderStatus,
   type OrderWithItems,
   canCancel,
@@ -29,6 +27,8 @@ import {
   totalBoxes,
 } from "@/lib/orders";
 import { formatPhone } from "@/lib/phone";
+import { formatDate } from "@/lib/dates";
+import { useTranslation } from "react-i18next";
 
 interface OrdersTableProps {
   orders: OrderWithItems[];
@@ -43,15 +43,17 @@ export function OrdersTable({
   loading,
   onView,
   onSetStatus,
-  emptyMessage = "No orders yet.",
+  emptyMessage,
 }: OrdersTableProps) {
+  const { t } = useTranslation();
+
   if (loading) {
-    return <div className="text-center py-8">Loading orders...</div>;
+    return <div className="text-center py-8">{t("orders.loading")}</div>;
   }
 
   if (orders.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">{emptyMessage}</div>
+      <div className="text-center py-8 text-muted-foreground">{emptyMessage ?? t("orders.empty")}</div>
     );
   }
 
@@ -60,14 +62,14 @@ export function OrdersTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Order</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Customer</TableHead>
-            <TableHead>Phone</TableHead>
-            <TableHead>Items</TableHead>
-            <TableHead>Total</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead>{t("orders.order")}</TableHead>
+            <TableHead>{t("orders.date")}</TableHead>
+            <TableHead>{t("orders.customer")}</TableHead>
+            <TableHead>{t("orders.phone")}</TableHead>
+            <TableHead>{t("orders.items")}</TableHead>
+            <TableHead>{t("orders.total")}</TableHead>
+            <TableHead>{t("orders.status")}</TableHead>
+            <TableHead className="text-end">{t("common.actions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -80,29 +82,29 @@ export function OrdersTable({
               <TableRow key={order.id}>
                 <TableCell className="font-medium">#{order.id}</TableCell>
                 <TableCell className="whitespace-nowrap">
-                  {format(new Date(order.created_at), "PP p")}
+                  {formatDate(order.created_at, "PP p")}
                 </TableCell>
                 <TableCell>{order.customer_name}</TableCell>
                 <TableCell dir="ltr" className="whitespace-nowrap">
                   {formatPhone(order.phone)}
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
-                  {order.order_items.length} {order.order_items.length === 1 ? "product" : "products"}
-                  <span className="text-muted-foreground"> · {boxes} {boxes === 1 ? "box" : "boxes"}</span>
+                  {t("orders.productCount", { count: order.order_items.length })}
+                  <span className="text-muted-foreground"> · {t("orders.boxCount", { count: boxes })}</span>
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
                   {order.total != null ? (
                     formatMAD(order.total)
                   ) : (
-                    <Badge variant="outline">Price to confirm</Badge>
+                    <Badge variant="outline">{t("orders.priceToConfirm")}</Badge>
                   )}
                 </TableCell>
                 <TableCell>
                   <OrderStatusBadge status={order.status} />
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-end">
                   <div className="flex justify-end gap-2">
-                    <Button variant="outline" size="sm" onClick={() => onView(order)} aria-label="View order">
+                    <Button variant="outline" size="sm" onClick={() => onView(order)} aria-label={t("orders.view")}>
                       <Eye className="h-4 w-4" />
                     </Button>
                     <DropdownMenu>
@@ -111,7 +113,7 @@ export function OrdersTable({
                           variant="outline"
                           size="sm"
                           disabled={!next && !canCancel(order.status)}
-                          aria-label="More actions"
+                          aria-label={t("common.moreActions")}
                         >
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
@@ -122,9 +124,9 @@ export function OrdersTable({
                             disabled={blocked}
                             onClick={() => onSetStatus(order, next)}
                           >
-                            <ArrowRight className="h-4 w-4 mr-2" />
-                            {ORDER_STATUS_ACTIONS[next]}
-                            {blocked && " (set prices first)"}
+                            <ArrowRight className="h-4 w-4 me-2 rtl:rotate-180" />
+                            {t(`orders.actions.${next}`)}
+                            {blocked && t("orders.setPricesFirst")}
                           </DropdownMenuItem>
                         )}
                         {canCancel(order.status) && (
@@ -134,8 +136,8 @@ export function OrdersTable({
                               className="text-destructive focus:text-destructive"
                               onClick={() => onSetStatus(order, "cancelled")}
                             >
-                              <XCircle className="h-4 w-4 mr-2" />
-                              {ORDER_STATUS_ACTIONS.cancelled}
+                              <XCircle className="h-4 w-4 me-2" />
+                              {t("orders.actions.cancelled")}
                             </DropdownMenuItem>
                           </>
                         )}

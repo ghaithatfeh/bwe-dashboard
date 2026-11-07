@@ -1,5 +1,7 @@
 import { LayoutDashboard, FolderTree, Package, ShoppingCart, Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { NavLink } from "@/components/NavLink";
+import { useLanguage } from "@/i18n";
 import {
   Sidebar,
   SidebarContent,
@@ -13,42 +15,45 @@ import {
 
 const menuItems = [
   {
-    title: "Overview",
+    titleKey: "nav.overview",
     url: "/dashboard",
     icon: LayoutDashboard,
   },
   {
-    title: "Categories",
+    titleKey: "nav.categories",
     url: "/dashboard/categories",
     icon: FolderTree,
   },
   {
-    title: "Products",
+    titleKey: "nav.products",
     url: "/dashboard/products",
     icon: Package,
   },
   {
-    title: "Orders",
+    titleKey: "nav.orders",
     url: "/dashboard/orders",
     icon: ShoppingCart,
   },
   {
-    title: "Users",
+    titleKey: "nav.users",
     url: "/dashboard/users",
     icon: Users,
   },
-];
+] as const;
 
 export function DashboardSidebar() {
+  const { t } = useTranslation();
+  const { dir } = useLanguage();
+
   return (
-    <Sidebar>
+    <Sidebar side={dir === "rtl" ? "right" : "left"}>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Management</SidebarGroupLabel>
+          <SidebarGroupLabel>{t("nav.management")}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
@@ -57,7 +62,7 @@ export function DashboardSidebar() {
                       activeClassName="bg-sidebar-accent font-medium"
                     >
                       <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
+                      <span>{t(item.titleKey)}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

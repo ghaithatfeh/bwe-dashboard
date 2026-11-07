@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Category } from "./Categories";
 import { normalizeColors, type ProductColor } from "@/lib/colors";
 import { filterProductsBySearch } from "@/lib/productSearch";
+import { useTranslation } from "react-i18next";
 
 export interface Product {
   id: number;
@@ -28,14 +29,14 @@ export interface Product {
   price: number | null;
   quantity_bag: number;
   quantity_box: number;
-  images: string[];
+  images: string[] | null;
   colors: ProductColor[] | null;
-  additional_colors: number;
-  is_featured: boolean;
-  top_products: boolean;
+  additional_colors: number | null;
+  is_featured: boolean | null;
+  top_products: boolean | null;
   primary_image_url: string | null;
-  created_at: string;
-  updated_at: string;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 const PRODUCTS_PER_PAGE = 10;
@@ -48,6 +49,7 @@ const Products = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const fetchData = async () => {
     setLoading(true);
@@ -59,8 +61,8 @@ const Products = () => {
     if (productsResult.error) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to fetch products",
+        title: t("common.error"),
+        description: t("products.fetchFailed"),
       });
     } else {
       setProducts(
@@ -74,8 +76,8 @@ const Products = () => {
     if (categoriesResult.error) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to fetch categories",
+        title: t("common.error"),
+        description: t("categories.fetchFailed"),
       });
     } else {
       setCategories(categoriesResult.data || []);
@@ -114,20 +116,20 @@ const Products = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this product?")) return;
+    if (!confirm(t("products.confirmDelete"))) return;
 
     const { error } = await supabase.from("products").delete().eq("id", id);
 
     if (error) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to delete product",
+        title: t("common.error"),
+        description: t("products.deleteFailed"),
       });
     } else {
       toast({
-        title: "Success",
-        description: "Product deleted successfully",
+        title: t("common.success"),
+        description: t("products.deleted"),
       });
       fetchData();
     }
@@ -137,36 +139,36 @@ const Products = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Products</h2>
-          <p className="text-muted-foreground">Manage your product catalog</p>
+          <h2 className="text-3xl font-bold tracking-tight">{t("products.title")}</h2>
+          <p className="text-muted-foreground">
+            {t("products.subtitle")}
+          </p>
         </div>
-        <Button
-          onClick={() => {
-            setEditingProduct(null);
-            setDialogOpen(true);
-          }}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Product
+        <Button onClick={() => {
+          setEditingProduct(null);
+          setDialogOpen(true);
+        }}>
+          <Plus className="h-4 w-4 me-2" />
+          {t("products.add")}
         </Button>
       </div>
 
       <div className="relative w-full sm:max-w-sm">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           type="search"
-          placeholder="Search by name or code..."
+          placeholder={t("products.searchPlaceholder")}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9 pr-9"
-          aria-label="Search products"
+          className="ps-9 pe-9"
+          aria-label={t("products.searchLabel")}
         />
         {searchQuery && (
           <button
             type="button"
             onClick={() => setSearchQuery("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            aria-label="Clear search"
+            className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            aria-label={t("common.clearSearch")}
           >
             <X className="h-4 w-4" />
           </button>
@@ -180,13 +182,13 @@ const Products = () => {
         onEdit={handleEdit}
         onDelete={handleDelete}
         emptyMessage={
-          searchQuery ? `No products match "${searchQuery.trim()}".` : undefined
+          searchQuery ? t("products.noMatch", { query: searchQuery.trim() }) : undefined
         }
       />
 
       {!loading && (
         <ListPagination
-          itemLabel="products"
+          itemLabel={t("products.itemLabel")}
           currentPage={currentPage}
           totalPages={totalPages}
           pageRange={pageRange}

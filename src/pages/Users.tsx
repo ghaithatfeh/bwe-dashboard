@@ -9,6 +9,7 @@ import { ListPagination } from "@/components/ListPagination";
 import { usePagination } from "@/hooks/usePagination";
 import { useToast } from "@/hooks/use-toast";
 import { formatPhone } from "@/lib/phone";
+import { useTranslation } from "react-i18next";
 
 export type AdminUser = Database["public"]["Functions"]["admin_list_users"]["Returns"][number];
 
@@ -33,6 +34,7 @@ const Users = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -41,8 +43,8 @@ const Users = () => {
     if (error) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to fetch users",
+        title: t("common.error"),
+        description: t("users.fetchFailed"),
       });
     } else {
       setUsers(data || []);
@@ -76,7 +78,7 @@ const Users = () => {
   });
 
   const displayName = (user: AdminUser) =>
-    `${user.first_name} ${user.last_name}`.trim() || formatPhone(user.phone) || user.email || "this user";
+    `${user.first_name} ${user.last_name}`.trim() || formatPhone(user.phone) || user.email || t("users.thisUser");
 
   const runAction = async (
     action: () => PromiseLike<{ error: { message: string } | null }>,
@@ -87,12 +89,12 @@ const Users = () => {
     if (error) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: t("common.error"),
         description: error.message,
       });
     } else {
       toast({
-        title: "Success",
+        title: t("common.success"),
         description: successMessage,
       });
       fetchUsers();
@@ -107,60 +109,60 @@ const Users = () => {
   const handleToggleAdmin = (user: AdminUser) => {
     const makeAdmin = !user.is_admin;
     const question = makeAdmin
-      ? `Give ${displayName(user)} full access to this dashboard?`
-      : `Remove dashboard access for ${displayName(user)}?`;
+      ? t("users.confirmMakeAdmin", { name: displayName(user) })
+      : t("users.confirmRemoveAdmin", { name: displayName(user) });
     if (!confirm(question)) return;
 
     runAction(
       () => supabase.rpc("admin_set_user_admin", { target_user_id: user.id, make_admin: makeAdmin }),
-      makeAdmin ? "User is now an admin" : "Admin access removed",
+      makeAdmin ? t("users.nowAdmin") : t("users.adminRemoved"),
     );
   };
 
   const handleToggleBanned = (user: AdminUser) => {
     const banned = !user.banned;
-    if (banned && !confirm(`Block ${displayName(user)}? They will be signed out and unable to sign in.`)) return;
+    if (banned && !confirm(t("users.confirmBlock", { name: displayName(user) }))) return;
 
     runAction(
       () => supabase.rpc("admin_set_user_banned", { target_user_id: user.id, banned }),
-      banned ? "User blocked" : "User unblocked",
+      banned ? t("users.blocked") : t("users.unblocked"),
     );
   };
 
   const handleDelete = (user: AdminUser) => {
-    if (!confirm(`Permanently delete ${displayName(user)}? This cannot be undone.`)) return;
+    if (!confirm(t("users.confirmDelete", { name: displayName(user) }))) return;
 
     runAction(
       () => supabase.rpc("admin_delete_user", { target_user_id: user.id }),
-      "User deleted successfully",
+      t("users.deleted"),
     );
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Users</h2>
+        <h2 className="text-3xl font-bold tracking-tight">{t("users.title")}</h2>
         <p className="text-muted-foreground">
-          Manage website visitors' accounts and dashboard admins
+          {t("users.subtitle")}
         </p>
       </div>
 
       <div className="relative w-full sm:max-w-sm">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           type="search"
-          placeholder="Search by name, phone or email..."
+          placeholder={t("users.searchPlaceholder")}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9 pr-9"
-          aria-label="Search users"
+          className="ps-9 pe-9"
+          aria-label={t("users.searchLabel")}
         />
         {searchQuery && (
           <button
             type="button"
             onClick={() => setSearchQuery("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            aria-label="Clear search"
+            className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            aria-label={t("common.clearSearch")}
           >
             <X className="h-4 w-4" />
           </button>
@@ -176,13 +178,13 @@ const Users = () => {
         onToggleBanned={handleToggleBanned}
         onDelete={handleDelete}
         emptyMessage={
-          searchQuery ? `No users match "${searchQuery.trim()}".` : undefined
+          searchQuery ? t("users.noMatch", { query: searchQuery.trim() }) : undefined
         }
       />
 
       {!loading && (
         <ListPagination
-          itemLabel="users"
+          itemLabel={t("users.itemLabel")}
           currentPage={currentPage}
           totalPages={totalPages}
           pageRange={pageRange}

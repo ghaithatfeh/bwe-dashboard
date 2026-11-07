@@ -11,6 +11,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Product } from "@/pages/Products";
 import { Category } from "@/pages/Categories";
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "@/i18n";
+import { localizedField } from "@/lib/localized";
 
 interface ProductsTableProps {
   products: Product[];
@@ -30,22 +33,24 @@ export function ProductsTable({
   onDelete,
   emptyMessage,
 }: ProductsTableProps) {
+  const { t } = useTranslation();
+  const { lang } = useLanguage();
+
   if (loading) {
-    return <div className="text-center py-8">Loading products...</div>;
+    return <div className="text-center py-8">{t("products.loading")}</div>;
   }
 
   if (products.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        {emptyMessage ??
-          "No products found. Create your first product to get started."}
+        {emptyMessage ?? t("products.empty")}
       </div>
     );
   }
 
   const getCategoryName = (id: number) => {
     const category = categories.find((c) => c.id === id);
-    return category?.title_en || "Unknown";
+    return category ? localizedField(category, "title", lang) : t("products.unknown");
   };
 
   return (
@@ -53,16 +58,16 @@ export function ProductsTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Image</TableHead>
-            <TableHead>Code</TableHead>
-            <TableHead>Title (EN)</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Material</TableHead>
-            <TableHead>Qty/Bag</TableHead>
-            <TableHead>Qty/Box</TableHead>
-            <TableHead>Price (MAD)</TableHead>
-            <TableHead>Featured</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead>{t("products.image")}</TableHead>
+            <TableHead>{t("products.code")}</TableHead>
+            <TableHead>{t("products.titleCol")}</TableHead>
+            <TableHead>{t("products.category")}</TableHead>
+            <TableHead>{t("products.material")}</TableHead>
+            <TableHead>{t("products.qtyBag")}</TableHead>
+            <TableHead>{t("products.qtyBox")}</TableHead>
+            <TableHead>{t("products.price")}</TableHead>
+            <TableHead>{t("products.featured")}</TableHead>
+            <TableHead className="text-end">{t("common.actions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -72,7 +77,7 @@ export function ProductsTable({
                 {product.primary_image_url ? (
                   <img
                     src={product.primary_image_url}
-                    alt={product.title_en}
+                    alt={localizedField(product, "title", lang)}
                     className="w-10 h-10 object-cover rounded border border-border"
                   />
                 ) : (
@@ -82,11 +87,11 @@ export function ProductsTable({
                 )}
               </TableCell>
               <TableCell className="font-medium">{product.code}</TableCell>
-              <TableCell>{product.title_en}</TableCell>
+              <TableCell>{localizedField(product, "title", lang)}</TableCell>
               <TableCell>
                 <Badge variant="secondary">{getCategoryName(product.category_id)}</Badge>
               </TableCell>
-              <TableCell>{product.material_en}</TableCell>
+              <TableCell>{localizedField(product, "material", lang)}</TableCell>
               <TableCell>{product.quantity_bag}</TableCell>
               <TableCell>{product.quantity_box}</TableCell>
               <TableCell>{product.price ?? "—"}</TableCell>
@@ -98,11 +103,11 @@ export function ProductsTable({
                     </Badge>
                   )}
                   {product.top_products && (
-                    <Badge className="bg-green-500">Top</Badge>
+                    <Badge className="bg-green-500">{t("products.top")}</Badge>
                   )}
                 </div>
               </TableCell>
-              <TableCell className="text-right">
+              <TableCell className="text-end">
                 <div className="flex justify-end gap-2">
                   <Button
                     variant="outline"

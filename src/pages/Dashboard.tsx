@@ -8,10 +8,13 @@ import { Outlet } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { LogOut } from "lucide-react";
 import { isAdmin } from "@/lib/admin";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,15 +41,15 @@ const Dashboard = () => {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     toast({
-      title: "Signed out",
-      description: "You have been signed out successfully",
+      title: t("nav.signedOut"),
+      description: t("nav.signedOutDesc"),
     });
   };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>Loading...</p>
+        <p>{t("common.loading")}</p>
       </div>
     );
   }
@@ -57,12 +60,15 @@ const Dashboard = () => {
         <DashboardSidebar />
         <div className="flex-1 flex flex-col">
           <header className="h-16 border-b bg-card flex items-center justify-between px-6">
-            <SidebarTrigger />
-            <h1 className="text-xl font-semibold">BWE Dashboard</h1>
-            <Button variant="outline" size="sm" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
+            <SidebarTrigger className="rtl:rotate-180" />
+            <h1 className="text-xl font-semibold">{t("common.appName")}</h1>
+            <div className="flex items-center gap-2">
+              <LanguageSwitcher />
+              <Button variant="outline" size="sm" onClick={handleSignOut}>
+                <LogOut className="h-4 w-4 me-2 rtl:rotate-180" />
+                {t("nav.signOut")}
+              </Button>
+            </div>
           </header>
           <main className="flex-1 p-6">
             <Outlet />

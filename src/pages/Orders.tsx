@@ -8,9 +8,9 @@ import { OrderDialog } from "@/components/orders/OrderDialog";
 import { ListPagination } from "@/components/ListPagination";
 import { usePagination } from "@/hooks/usePagination";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 import {
   ORDER_STATUSES,
-  ORDER_STATUS_LABELS,
   type OrderItem,
   type OrderStatus,
   type OrderWithItems,
@@ -40,6 +40,7 @@ const Orders = () => {
   // Kept as an id so the dialog shows the refreshed order after each change.
   const [viewingOrderId, setViewingOrderId] = useState<number | null>(null);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const fetchOrders = async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -52,8 +53,8 @@ const Orders = () => {
     if (error) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to fetch orders",
+        title: t("common.error"),
+        description: t("orders.fetchFailed"),
       });
     } else {
       setOrders(data || []);
@@ -104,7 +105,7 @@ const Orders = () => {
   };
 
   const handleSetStatus = async (order: OrderWithItems, status: OrderStatus) => {
-    if (status === "cancelled" && !confirm(`Cancel order #${order.id} from ${order.customer_name}?`)) return;
+    if (status === "cancelled" && !confirm(t("orders.confirmCancel", { id: order.id, name: order.customer_name }))) return;
 
     const { error } = await supabase.rpc("admin_set_order_status", {
       p_order_id: order.id,
@@ -114,13 +115,13 @@ const Orders = () => {
     if (error) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: t("common.error"),
         description: error.message,
       });
     } else {
       toast({
-        title: "Success",
-        description: `Order #${order.id} is now ${ORDER_STATUS_LABELS[status].toLowerCase()}`,
+        title: t("common.success"),
+        description: t("orders.statusUpdated", { id: order.id, status: t(`orders.statuses.${status}`).toLowerCase() }),
       });
       fetchOrders(false);
     }
@@ -135,58 +136,66 @@ const Orders = () => {
     if (error) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: t("common.error"),
         description: error.message,
       });
       return false;
     }
     toast({
-      title: "Success",
-      description: `Price updated for ${item.product_code}`,
+      title: t("common.success"),
+      description: t("orders.priceUpdated", { code: item.product_code }),
     });
     await fetchOrders(false);
     return true;
   };
 
-  const filterLabel = statusFilter === "all" ? "" : ` ${ORDER_STATUS_LABELS[statusFilter].toLowerCase()}`;
+  const query = searchQuery.trim();
+  const filterLabel = statusFilter === "all" ? "" : t(`orders.statuses.${statusFilter}`).toLowerCase();
+  const emptyMessage = searchQuery
+    ? filterLabel
+      ? t("orders.noMatchInStatus", { status: filterLabel, query })
+      : t("orders.noMatch", { query })
+    : filterLabel
+      ? t("orders.noneInStatus", { status: filterLabel })
+      : undefined;
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Orders</h2>
+        <h2 className="text-3xl font-bold tracking-tight">{t("orders.title")}</h2>
         <p className="text-muted-foreground">
-          Review orders placed on the website and update their status
+          {t("orders.subtitle")}
         </p>
       </div>
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as StatusFilter)}>
           <TabsList className="h-auto flex-wrap justify-start">
-            <TabsTrigger value="all">All ({statusCounts.all})</TabsTrigger>
+            <TabsTrigger value="all">{t("orders.all", { count: statusCounts.all })}</TabsTrigger>
             {ORDER_STATUSES.map((status) => (
               <TabsTrigger key={status} value={status}>
-                {ORDER_STATUS_LABELS[status]} ({statusCounts[status]})
+                {t("orders.statusTab", { status: t(`orders.statuses.${status}`), count: statusCounts[status] })}
               </TabsTrigger>
             ))}
           </TabsList>
         </Tabs>
 
         <div className="relative w-full sm:max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search by order #, name or phone..."
+            placeholder={t("orders.searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 pr-9"
-            aria-label="Search orders"
+            className="ps-9 pe-9"
+            aria-label={t("orders.searchLabel")}
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              aria-label="Clear search"
+              className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              aria-label={t("common.clearSearch")}
             >
               <X className="h-4 w-4" />
             </button>
@@ -199,18 +208,12 @@ const Orders = () => {
         loading={loading}
         onView={handleView}
         onSetStatus={handleSetStatus}
-        emptyMessage={
-          searchQuery
-            ? `No${filterLabel} orders match "${searchQuery.trim()}".`
-            : statusFilter !== "all"
-              ? `No${filterLabel} orders.`
-              : undefined
-        }
+        emptyMessage={emptyMessage}
       />
 
       {!loading && (
         <ListPagination
-          itemLabel="orders"
+          itemLabel={t("orders.itemLabel")}
           currentPage={currentPage}
           totalPages={totalPages}
           pageRange={pageRange}

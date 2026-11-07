@@ -10,6 +10,9 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Category } from "@/pages/Categories";
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "@/i18n";
+import { localizedField } from "@/lib/localized";
 
 interface CategoriesTableProps {
   /** Rows to render (may be a single page). */
@@ -28,14 +31,17 @@ export function CategoriesTable({
   onEdit,
   onDelete,
 }: CategoriesTableProps) {
+  const { t } = useTranslation();
+  const { lang } = useLanguage();
+
   if (loading) {
-    return <div className="text-center py-8">Loading categories...</div>;
+    return <div className="text-center py-8">{t("categories.loading")}</div>;
   }
 
   if (categories.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        No categories found. Create your first category to get started.
+        {t("categories.empty")}
       </div>
     );
   }
@@ -43,7 +49,7 @@ export function CategoriesTable({
   const getCategoryName = (id: number | null) => {
     if (!id) return null;
     const category = allCategories.find((c) => c.id === id);
-    return category?.title_en;
+    return localizedField(category, "title", lang);
   };
 
   return (
@@ -51,33 +57,33 @@ export function CategoriesTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>ID</TableHead>
-            <TableHead>English Title</TableHead>
-            <TableHead>Arabic Title</TableHead>
-            <TableHead>French Title</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Parent</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead>{t("common.id")}</TableHead>
+            <TableHead>{t("categories.englishTitle")}</TableHead>
+            <TableHead>{t("categories.arabicTitle")}</TableHead>
+            <TableHead>{t("categories.frenchTitle")}</TableHead>
+            <TableHead>{t("categories.type")}</TableHead>
+            <TableHead>{t("categories.parent")}</TableHead>
+            <TableHead className="text-end">{t("common.actions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {categories.map((category) => (
             <TableRow key={category.id}>
               <TableCell className="font-medium">{category.id}</TableCell>
-              <TableCell>{category.title_en}</TableCell>
-              <TableCell className="font-arabic">{category.title_ar}</TableCell>
-              <TableCell>{category.title_fr}</TableCell>
+              <TableCell dir="ltr" className="rtl:text-right">{category.title_en}</TableCell>
+              <TableCell dir="rtl" className="font-arabic ltr:text-left">{category.title_ar}</TableCell>
+              <TableCell dir="ltr" className="rtl:text-right">{category.title_fr}</TableCell>
               <TableCell>
                 {category.parent_id ? (
-                  <Badge variant="secondary">Subcategory</Badge>
+                  <Badge variant="secondary">{t("categories.subcategory")}</Badge>
                 ) : (
-                  <Badge>Main Category</Badge>
+                  <Badge>{t("categories.mainCategory")}</Badge>
                 )}
               </TableCell>
               <TableCell>
                 {category.parent_id ? getCategoryName(category.parent_id) : "-"}
               </TableCell>
-              <TableCell className="text-right">
+              <TableCell className="text-end">
                 <div className="flex justify-end gap-2">
                   <Button
                     variant="outline"

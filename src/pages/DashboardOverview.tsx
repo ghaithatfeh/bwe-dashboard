@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FolderTree, Package, Star, TrendingUp } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const DashboardOverview = () => {
+  const { t } = useTranslation();
   const [stats, setStats] = useState({
     totalCategories: 0,
     totalProducts: 0,
@@ -33,25 +35,25 @@ const DashboardOverview = () => {
 
   const statCards = [
     {
-      title: "Total Categories",
+      title: t("overview.totalCategories"),
       value: stats.totalCategories,
       icon: FolderTree,
       color: "text-primary",
     },
     {
-      title: "Total Products",
+      title: t("overview.totalProducts"),
       value: stats.totalProducts,
       icon: Package,
       color: "text-accent",
     },
     {
-      title: "Featured Products",
+      title: t("overview.featuredProducts"),
       value: stats.featuredProducts,
       icon: Star,
       color: "text-yellow-600",
     },
     {
-      title: "Top Products",
+      title: t("overview.topProducts"),
       value: stats.topProducts,
       icon: TrendingUp,
       color: "text-green-600",
@@ -61,15 +63,15 @@ const DashboardOverview = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard Overview</h2>
+        <h2 className="text-3xl font-bold tracking-tight">{t("overview.title")}</h2>
         <p className="text-muted-foreground">
-          Welcome to your BWE dashboard
+          {t("overview.welcome")}
         </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat) => (
-          <Card key={stat.title}>
+          <Card key={stat.color}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 {stat.title}

@@ -7,6 +7,7 @@ import { CategoriesTable } from "@/components/categories/CategoriesTable";
 import { ListPagination } from "@/components/ListPagination";
 import { usePagination } from "@/hooks/usePagination";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 export interface Category {
   id: number;
@@ -14,8 +15,8 @@ export interface Category {
   title_ar: string;
   title_fr: string;
   parent_id: number | null;
-  created_at: string;
-  updated_at: string;
+  created_at: string | null;
+  updated_at: string | null;
   categories?: Category[];
 }
 
@@ -27,6 +28,7 @@ const Categories = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const fetchCategories = async () => {
     setLoading(true);
@@ -39,8 +41,8 @@ const Categories = () => {
     if (error) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to fetch categories",
+        title: t("common.error"),
+        description: t("categories.fetchFailed"),
       });
     } else {
       setCategories(data || []);
@@ -72,20 +74,20 @@ const Categories = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this category?")) return;
+    if (!confirm(t("categories.confirmDelete"))) return;
 
     const { error } = await supabase.from("categories").delete().eq("id", id);
 
     if (error) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to delete category",
+        title: t("common.error"),
+        description: t("categories.deleteFailed"),
       });
     } else {
       toast({
-        title: "Success",
-        description: "Category deleted successfully",
+        title: t("common.success"),
+        description: t("categories.deleted"),
       });
       fetchCategories();
     }
@@ -95,17 +97,17 @@ const Categories = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Categories</h2>
+          <h2 className="text-3xl font-bold tracking-tight">{t("categories.title")}</h2>
           <p className="text-muted-foreground">
-            Manage your product categories and subcategories
+            {t("categories.subtitle")}
           </p>
         </div>
         <Button onClick={() => {
           setEditingCategory(null);
           setDialogOpen(true);
         }}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Category
+          <Plus className="h-4 w-4 me-2" />
+          {t("categories.add")}
         </Button>
       </div>
 
@@ -119,7 +121,7 @@ const Categories = () => {
 
       {!loading && (
         <ListPagination
-          itemLabel="categories"
+          itemLabel={t("categories.itemLabel")}
           currentPage={currentPage}
           totalPages={totalPages}
           pageRange={pageRange}

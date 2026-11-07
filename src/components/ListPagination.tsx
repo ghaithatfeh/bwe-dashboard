@@ -1,9 +1,10 @@
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DOTS } from "@/hooks/usePagination";
+import { useTranslation } from "react-i18next";
 
 interface ListPaginationProps {
-  /** Plural noun for the summary line, e.g. "products". */
+  /** Translated plural noun for the summary line, e.g. "products". */
   itemLabel: string;
   currentPage: number;
   totalPages: number;
@@ -24,17 +25,19 @@ export function ListPagination({
   totalItems,
   onPageChange,
 }: ListPaginationProps) {
+  const { t } = useTranslation();
+
   if (totalItems === 0) return null;
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <p className="text-sm text-muted-foreground">
-        Showing {firstItemIndex}-{lastItemIndex} of {totalItems} {itemLabel}
+        {t("pagination.showing", { from: firstItemIndex, to: lastItemIndex, total: totalItems, label: itemLabel })}
       </p>
 
       {totalPages > 1 && (
         <nav
-          aria-label={`${itemLabel} pagination`}
+          aria-label={t("pagination.label", { label: itemLabel })}
           className="flex items-center gap-1"
         >
           <Button
@@ -43,10 +46,10 @@ export function ListPagination({
             size="sm"
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            aria-label="Go to previous page"
+            aria-label={t("pagination.previousPage")}
           >
-            <ChevronLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">Previous</span>
+            <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
+            <span className="hidden sm:inline">{t("pagination.previous")}</span>
           </Button>
 
           {pageRange.map((item, index) =>
@@ -66,7 +69,7 @@ export function ListPagination({
                 size="icon"
                 onClick={() => onPageChange(item)}
                 aria-current={item === currentPage ? "page" : undefined}
-                aria-label={`Go to page ${item}`}
+                aria-label={t("pagination.page", { page: item })}
               >
                 {item}
               </Button>
@@ -79,10 +82,10 @@ export function ListPagination({
             size="sm"
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            aria-label="Go to next page"
+            aria-label={t("pagination.nextPage")}
           >
-            <span className="hidden sm:inline">Next</span>
-            <ChevronRight className="h-4 w-4" />
+            <span className="hidden sm:inline">{t("pagination.next")}</span>
+            <ChevronRight className="h-4 w-4 rtl:rotate-180" />
           </Button>
         </nav>
       )}

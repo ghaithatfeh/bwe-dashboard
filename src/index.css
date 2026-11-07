@@ -96,4 +96,8 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+
+  html[lang="ar"] body {
+    @apply font-arabic;
+  }
 }

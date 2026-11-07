@@ -8,10 +8,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { isAdmin } from "@/lib/admin";
 import type { Session } from "@supabase/supabase-js";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import i18n from "@/i18n";
 
 const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,8 +32,8 @@ const Auth = () => {
       await supabase.auth.signOut();
       toast({
         variant: "destructive",
-        title: "Access denied",
-        description: "This account does not have admin access",
+        title: i18n.t("auth.accessDenied"),
+        description: i18n.t("auth.noAdminAccess"),
       });
     };
 
@@ -48,8 +52,8 @@ const Auth = () => {
     if (!email || !password) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Please fill in all fields",
+        title: t("common.error"),
+        description: t("auth.fillAllFields"),
       });
       return;
     }
@@ -63,7 +67,7 @@ const Auth = () => {
     if (error) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: t("common.error"),
         description: error.message,
       });
     }
@@ -71,40 +75,45 @@ const Auth = () => {
   };
 
   return (
-		<div className="min-h-screen flex items-center justify-center bg-muted p-4">
+		<div className="relative min-h-screen flex items-center justify-center bg-muted p-4">
+			<LanguageSwitcher className="absolute top-4 end-4" />
 			<Card className="w-full max-w-md">
 				<CardHeader>
-					<CardTitle className="text-2xl text-center">BWE Dashboard</CardTitle>
+					<CardTitle className="text-2xl text-center">{t("common.appName")}</CardTitle>
 					<CardDescription className="text-center">
-						Sign in to manage your categories and products
+						{t("auth.subtitle")}
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
 					<form onSubmit={handleSignIn} className="space-y-4">
 						<div className="space-y-2">
-							<Label htmlFor="email-signin">Email</Label>
+							<Label htmlFor="email-signin">{t("auth.email")}</Label>
 							<Input
 								id="email-signin"
 								type="email"
-								placeholder="Enter your email"
+								dir="ltr"
+								className="rtl:text-right"
+								placeholder={t("auth.emailPlaceholder")}
 								value={email}
 								onChange={(e) => setEmail(e.target.value)}
 								required
 							/>
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="password-signin">Password</Label>
+							<Label htmlFor="password-signin">{t("auth.password")}</Label>
 							<Input
 								id="password-signin"
 								type="password"
-								placeholder="Enter your password"
+								dir="ltr"
+								className="rtl:text-right"
+								placeholder={t("auth.passwordPlaceholder")}
 								value={password}
 								onChange={(e) => setPassword(e.target.value)}
 								required
 							/>
 						</div>
 						<Button type="submit" className="w-full" disabled={loading}>
-							{loading ? "Signing in..." : "Sign In"}
+							{loading ? t("auth.signingIn") : t("auth.signIn")}
 						</Button>
 					</form>
 				</CardContent>

@@ -29,6 +29,9 @@ import {
   type ProductColor,
   type ProductColorNames,
 } from "@/lib/colors";
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "@/i18n";
+import { localizedField } from "@/lib/localized";
 
 interface ProductDialogProps {
   open: boolean;
@@ -46,6 +49,8 @@ export function ProductDialog({
   onSuccess,
 }: ProductDialogProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
+  const { lang } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     code: "",
@@ -91,9 +96,9 @@ export function ProductDialog({
         quantity_bag: product.quantity_bag,
         quantity_box: product.quantity_box,
         colors: normalizeColors(product.colors),
-        additional_colors: product.additional_colors,
-        is_featured: product.is_featured,
-        top_products: product.top_products,
+        additional_colors: product.additional_colors ?? 0,
+        is_featured: product.is_featured ?? false,
+        top_products: product.top_products ?? false,
       });
       setImages(product.images || []);
       setPrimaryImage(product.primary_image_url);
@@ -134,8 +139,8 @@ export function ProductDialog({
         if (!file.type.startsWith("image/")) {
           toast({
             variant: "destructive",
-            title: "Invalid file",
-            description: `${file.name} is not an image file`,
+            title: t("products.images.invalidFile"),
+            description: t("products.images.notImage", { name: file.name }),
           });
           continue;
         }
@@ -143,8 +148,8 @@ export function ProductDialog({
         if (file.size > 5 * 1024 * 1024) {
           toast({
             variant: "destructive",
-            title: "File too large",
-            description: `${file.name} exceeds 5MB limit`,
+            title: t("products.images.tooLarge"),
+            description: t("products.images.exceedsLimit", { name: file.name }),
           });
           continue;
         }
@@ -160,7 +165,7 @@ export function ProductDialog({
         if (uploadError) {
           toast({
             variant: "destructive",
-            title: "Upload failed",
+            title: t("products.images.uploadFailed"),
             description: uploadError.message,
           });
           continue;
@@ -181,14 +186,14 @@ export function ProductDialog({
       }
 
       toast({
-        title: "Success",
-        description: `${uploadedUrls.length} image(s) uploaded successfully`,
+        title: t("common.success"),
+        description: t("products.images.uploaded", { count: uploadedUrls.length }),
       });
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Upload failed",
-        description: "An error occurred during upload",
+        title: t("products.images.uploadFailed"),
+        description: t("products.images.uploadError"),
       });
     } finally {
       setUploading(false);
@@ -234,14 +239,14 @@ export function ProductDialog({
       }
 
       toast({
-        title: "Success",
-        description: "Image deleted successfully",
+        title: t("common.success"),
+        description: t("products.images.deleted"),
       });
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to delete image",
+        title: t("common.error"),
+        description: t("products.images.deleteFailed"),
       });
     }
   };
@@ -249,8 +254,8 @@ export function ProductDialog({
   const handleSetPrimary = (imageUrl: string) => {
     setPrimaryImage(imageUrl);
     toast({
-      title: "Primary image set",
-      description: "This image is now the primary product image",
+      title: t("products.images.primarySet"),
+      description: t("products.images.primarySetDesc"),
     });
   };
 
@@ -275,13 +280,13 @@ export function ProductDialog({
     if (error) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: t("common.error"),
         description: error.message,
       });
     } else {
       toast({
-        title: "Success",
-        description: `Product ${product ? "updated" : "created"} successfully`,
+        title: t("common.success"),
+        description: product ? t("products.updated") : t("products.created"),
       });
       onSuccess();
       onOpenChange(false);
@@ -340,26 +345,28 @@ export function ProductDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>{product ? "Edit Product" : "Add Product"}</DialogTitle>
+          <DialogTitle>{product ? t("products.edit") : t("products.add")}</DialogTitle>
           <DialogDescription>
-            {product ? "Update product information" : "Add a new product to your catalog"}
+            {product ? t("products.editDesc") : t("products.addDesc")}
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="max-h-[calc(90vh-120px)]">
-          <form onSubmit={handleSubmit} className="space-y-4 pr-4">
+          <form onSubmit={handleSubmit} className="space-y-4 pe-4">
             <Tabs defaultValue="basic">
               <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="basic">Basic Info</TabsTrigger>
-                <TabsTrigger value="specs">Specifications</TabsTrigger>
-                <TabsTrigger value="images">Images</TabsTrigger>
-                <TabsTrigger value="additional">Additional</TabsTrigger>
+                <TabsTrigger value="basic">{t("products.tabs.basic")}</TabsTrigger>
+                <TabsTrigger value="specs">{t("products.tabs.specs")}</TabsTrigger>
+                <TabsTrigger value="images">{t("products.tabs.images")}</TabsTrigger>
+                <TabsTrigger value="additional">{t("products.tabs.additional")}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="basic" className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="code">Product Code</Label>
+                  <Label htmlFor="code">{t("products.form.code")}</Label>
                   <Input
                     id="code"
+                    dir="ltr"
+                    className="rtl:text-right"
                     value={formData.code}
                     onChange={(e) =>
                       setFormData({ ...formData, code: e.target.value })
@@ -369,7 +376,7 @@ export function ProductDialog({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="category_id">Category (Subcategory only)</Label>
+                  <Label htmlFor="category_id">{t("products.form.category")}</Label>
                   <Select
                     value={formData.category_id.toString()}
                     onValueChange={(value) =>
@@ -378,12 +385,12 @@ export function ProductDialog({
                     required
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
+                      <SelectValue placeholder={t("products.form.selectCategory")} />
                     </SelectTrigger>
                     <SelectContent>
                       {subcategories.map((cat) => (
                         <SelectItem key={cat.id} value={cat.id.toString()}>
-                          {cat.title_en}
+                          {localizedField(cat, "title", lang)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -391,9 +398,10 @@ export function ProductDialog({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="title_en">Title (English)</Label>
+                  <Label htmlFor="title_en">{t("common.titleEn")}</Label>
                   <Input
                     id="title_en"
+                    dir="ltr"
                     value={formData.title_en}
                     onChange={(e) =>
                       setFormData({ ...formData, title_en: e.target.value })
@@ -403,9 +411,10 @@ export function ProductDialog({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="title_ar">Title (Arabic)</Label>
+                  <Label htmlFor="title_ar">{t("common.titleAr")}</Label>
                   <Input
                     id="title_ar"
+                    dir="rtl"
                     value={formData.title_ar}
                     onChange={(e) =>
                       setFormData({ ...formData, title_ar: e.target.value })
@@ -415,9 +424,10 @@ export function ProductDialog({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="title_fr">Title (French)</Label>
+                  <Label htmlFor="title_fr">{t("common.titleFr")}</Label>
                   <Input
                     id="title_fr"
+                    dir="ltr"
                     value={formData.title_fr}
                     onChange={(e) =>
                       setFormData({ ...formData, title_fr: e.target.value })
@@ -429,9 +439,10 @@ export function ProductDialog({
 
               <TabsContent value="specs" className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="material_en">Material (English)</Label>
+                  <Label htmlFor="material_en">{t("products.form.materialEn")}</Label>
                   <Input
                     id="material_en"
+                    dir="ltr"
                     value={formData.material_en}
                     onChange={(e) =>
                       setFormData({ ...formData, material_en: e.target.value })
@@ -441,9 +452,10 @@ export function ProductDialog({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="material_ar">Material (Arabic)</Label>
+                  <Label htmlFor="material_ar">{t("products.form.materialAr")}</Label>
                   <Input
                     id="material_ar"
+                    dir="rtl"
                     value={formData.material_ar}
                     onChange={(e) =>
                       setFormData({ ...formData, material_ar: e.target.value })
@@ -453,9 +465,10 @@ export function ProductDialog({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="material_fr">Material (French)</Label>
+                  <Label htmlFor="material_fr">{t("products.form.materialFr")}</Label>
                   <Input
                     id="material_fr"
+                    dir="ltr"
                     value={formData.material_fr}
                     onChange={(e) =>
                       setFormData({ ...formData, material_fr: e.target.value })
@@ -466,7 +479,7 @@ export function ProductDialog({
 
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="length">Length (mm)</Label>
+                    <Label htmlFor="length">{t("products.form.length")}</Label>
                     <Input
                       id="length"
                       type="number"
@@ -482,7 +495,7 @@ export function ProductDialog({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="weight">Weight (g)</Label>
+                    <Label htmlFor="weight">{t("products.form.weight")}</Label>
                     <Input
                       id="weight"
                       type="number"
@@ -498,7 +511,7 @@ export function ProductDialog({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="diameter">Diameter (mm)</Label>
+                    <Label htmlFor="diameter">{t("products.form.diameter")}</Label>
                     <Input
                       id="diameter"
                       type="number"
@@ -516,7 +529,7 @@ export function ProductDialog({
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="quantity_bag">Quantity per Bag (pcs)</Label>
+                    <Label htmlFor="quantity_bag">{t("products.form.quantityBag")}</Label>
                     <Input
                       id="quantity_bag"
                       type="number"
@@ -532,7 +545,7 @@ export function ProductDialog({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="quantity_box">Quantity per Box (pcs)</Label>
+                    <Label htmlFor="quantity_box">{t("products.form.quantityBox")}</Label>
                     <Input
                       id="quantity_box"
                       type="number"
@@ -549,13 +562,13 @@ export function ProductDialog({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="price">Price (MAD)</Label>
+                  <Label htmlFor="price">{t("products.form.price")}</Label>
                   <Input
                     id="price"
                     type="number"
                     step="0.01"
                     min="0"
-                    placeholder="Leave empty to hide price on the website"
+                    placeholder={t("products.form.pricePlaceholder")}
                     value={formData.price ?? ""}
                     onChange={(e) =>
                       setFormData({
@@ -596,10 +609,10 @@ export function ProductDialog({
                       <Upload className="h-10 w-10 text-muted-foreground" />
                       <div>
                         <p className="text-sm font-medium">
-                          {uploading ? "Uploading..." : "Click to upload or drag and drop"}
+                          {uploading ? t("products.images.uploading") : t("products.images.dropHint")}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          PNG, JPG, WEBP up to 5MB
+                          {t("products.images.formats")}
                         </p>
                       </div>
                     </label>
@@ -612,7 +625,7 @@ export function ProductDialog({
                           <Card key={index} className="relative group overflow-hidden">
                             <img
                               src={imageUrl}
-                              alt={`Product ${index + 1}`}
+                              alt={t("products.images.alt", { index: index + 1 })}
                               className="w-full h-32 object-cover"
                             />
                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
@@ -634,8 +647,8 @@ export function ProductDialog({
                               </Button>
                             </div>
                             {primaryImage === imageUrl && (
-                              <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded">
-                                Primary
+                              <div className="absolute top-2 start-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded">
+                                {t("products.images.primary")}
                               </div>
                             )}
                           </Card>
@@ -647,7 +660,7 @@ export function ProductDialog({
                   {images.length === 0 && (
                     <div className="text-center pt-6 text-muted-foreground">
                       <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">No images uploaded yet</p>
+                      <p className="text-sm">{t("products.images.none")}</p>
                     </div>
                   )}
                 </div>
@@ -655,15 +668,17 @@ export function ProductDialog({
 
               <TabsContent value="additional" className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Available Colors</Label>
+                  <Label>{t("products.form.colors")}</Label>
                   <div className="flex gap-2">
                     <Input
-                      placeholder="Enter color hex code (e.g., #ff0000)"
+                      placeholder={t("products.form.colorPlaceholder")}
+                      dir="ltr"
+                      className="rtl:text-right"
                       value={colorInput}
                       onChange={(e) => setColorInput(e.target.value)}
                     />
                     <Button type="button" onClick={addColor}>
-                      Add
+                      {t("common.add")}
                     </Button>
                     <Button
                       type="button"
@@ -671,7 +686,7 @@ export function ProductDialog({
                       onClick={addTransparentColor}
                       disabled={hasColor(TRANSPARENT_COLOR)}
                     >
-                      Transparent
+                      {t("products.form.transparent")}
                     </Button>
                     <Button
                       type="button"
@@ -679,7 +694,7 @@ export function ProductDialog({
                       onClick={addColorfulColor}
                       disabled={hasColor(COLORFUL_COLOR)}
                     >
-                      Colorful
+                      {t("products.form.colorful")}
                     </Button>
                   </div>
                   <div className="space-y-2 mt-2">
@@ -693,13 +708,14 @@ export function ProductDialog({
                             className="w-5 h-5 rounded-full border shrink-0"
                             style={getColorSwatchStyle(color.value)}
                           />
-                          <span className="text-sm font-mono truncate">
+                          <span className="text-sm font-mono truncate" dir="ltr">
                             {color.value}
                           </span>
                         </div>
                         <Input
                           className="flex-1 min-w-[8rem]"
-                          placeholder="Name (EN)"
+                          dir="ltr"
+                          placeholder={t("products.form.colorNameEn")}
                           value={color.name_en}
                           onChange={(e) =>
                             updateColorName(color.value, "name_en", e.target.value)
@@ -716,7 +732,8 @@ export function ProductDialog({
                         />
                         <Input
                           className="flex-1 min-w-[8rem]"
-                          placeholder="Nom (FR, optional)"
+                          dir="ltr"
+                          placeholder={t("products.form.colorNameFr")}
                           value={color.name_fr}
                           onChange={(e) =>
                             updateColorName(color.value, "name_fr", e.target.value)
@@ -726,7 +743,7 @@ export function ProductDialog({
                           type="button"
                           onClick={() => removeColor(color.value)}
                           className="text-destructive hover:text-destructive/80 px-1"
-                          aria-label={`Remove ${color.value}`}
+                          aria-label={t("products.form.removeColor", { color: color.value })}
                         >
                           ×
                         </button>
@@ -736,7 +753,7 @@ export function ProductDialog({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="additional_colors">Additional Colors</Label>
+                  <Label htmlFor="additional_colors">{t("products.form.additionalColors")}</Label>
                   <Input
                     id="additional_colors"
                     type="number"
@@ -751,7 +768,7 @@ export function ProductDialog({
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="is_featured">Featured Product</Label>
+                  <Label htmlFor="is_featured">{t("products.form.isFeatured")}</Label>
                   <Switch
                     id="is_featured"
                     checked={formData.is_featured}
@@ -762,7 +779,7 @@ export function ProductDialog({
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="top_products">Top Product</Label>
+                  <Label htmlFor="top_products">{t("products.form.topProduct")}</Label>
                   <Switch
                     id="top_products"
                     checked={formData.top_products}
@@ -780,10 +797,10 @@ export function ProductDialog({
                 variant="outline"
                 onClick={() => onOpenChange(false)}
               >
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? "Saving..." : product ? "Update" : "Create"}
+                {loading ? t("common.saving") : product ? t("common.update") : t("common.create")}
               </Button>
             </div>
           </form>

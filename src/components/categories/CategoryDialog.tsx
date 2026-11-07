@@ -13,6 +13,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Category } from "@/pages/Categories";
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "@/i18n";
+import { localizedField } from "@/lib/localized";
 
 interface CategoryDialogProps {
   open: boolean;
@@ -30,6 +33,8 @@ export function CategoryDialog({
   onSuccess,
 }: CategoryDialogProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
+  const { lang } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title_en: "",
@@ -72,13 +77,13 @@ export function CategoryDialog({
     if (error) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: t("common.error"),
         description: error.message,
       });
     } else {
       toast({
-        title: "Success",
-        description: `Category ${category ? "updated" : "created"} successfully`,
+        title: t("common.success"),
+        description: category ? t("categories.updated") : t("categories.created"),
       });
       onSuccess();
       onOpenChange(false);
@@ -92,18 +97,19 @@ export function CategoryDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>{category ? "Edit Category" : "Add Category"}</DialogTitle>
+          <DialogTitle>{category ? t("categories.edit") : t("categories.add")}</DialogTitle>
           <DialogDescription>
             {category
-              ? "Update the category information below"
-              : "Add a new category or subcategory"}
+              ? t("categories.editDesc")
+              : t("categories.addDesc")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="title_en">Title (English)</Label>
+            <Label htmlFor="title_en">{t("common.titleEn")}</Label>
             <Input
               id="title_en"
+              dir="ltr"
               value={formData.title_en}
               onChange={(e) =>
                 setFormData({ ...formData, title_en: e.target.value })
@@ -112,9 +118,10 @@ export function CategoryDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="title_ar">Title (Arabic)</Label>
+            <Label htmlFor="title_ar">{t("common.titleAr")}</Label>
             <Input
               id="title_ar"
+              dir="rtl"
               value={formData.title_ar}
               onChange={(e) =>
                 setFormData({ ...formData, title_ar: e.target.value })
@@ -123,9 +130,10 @@ export function CategoryDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="title_fr">Title (French)</Label>
+            <Label htmlFor="title_fr">{t("common.titleFr")}</Label>
             <Input
               id="title_fr"
+              dir="ltr"
               value={formData.title_fr}
               onChange={(e) =>
                 setFormData({ ...formData, title_fr: e.target.value })
@@ -135,7 +143,7 @@ export function CategoryDialog({
           </div>
           {!hasSubcategories && (
             <div className="space-y-2">
-              <Label htmlFor="parent_id">Parent Category (Optional)</Label>
+              <Label htmlFor="parent_id">{t("categories.parentOptional")}</Label>
               <Select
                 value={formData.parent_id?.toString() || "none"}
                 onValueChange={(value) =>
@@ -146,13 +154,13 @@ export function CategoryDialog({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select parent category" />
+                  <SelectValue placeholder={t("categories.selectParent")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">None (Main Category)</SelectItem>
+                  <SelectItem value="none">{t("categories.noneMain")}</SelectItem>
                   {parentCategories.map((cat) => (
                     <SelectItem key={cat.id} value={cat.id.toString()}>
-                      {cat.title_en}
+                      {localizedField(cat, "title", lang)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -165,10 +173,10 @@ export function CategoryDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Saving..." : category ? "Update" : "Create"}
+              {loading ? t("common.saving") : category ? t("common.update") : t("common.create")}
             </Button>
           </div>
         </form>

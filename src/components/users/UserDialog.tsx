@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { formatPhone } from "@/lib/phone";
+import { useTranslation } from "react-i18next";
 import type { AdminUser } from "@/pages/Users";
 
 interface UserDialogProps {
@@ -24,6 +25,7 @@ interface UserDialogProps {
 
 export function UserDialog({ open, onOpenChange, user, onSuccess }: UserDialogProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     first_name: "",
@@ -61,13 +63,13 @@ export function UserDialog({ open, onOpenChange, user, onSuccess }: UserDialogPr
     if (error) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: t("common.error"),
         description: error.message,
       });
     } else {
       toast({
-        title: "Success",
-        description: "User updated successfully",
+        title: t("common.success"),
+        description: t("users.updated"),
       });
       onSuccess();
       onOpenChange(false);
@@ -79,19 +81,19 @@ export function UserDialog({ open, onOpenChange, user, onSuccess }: UserDialogPr
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit User</DialogTitle>
+          <DialogTitle>{t("users.edit")}</DialogTitle>
           <DialogDescription>
-            The phone number is verified by the user and cannot be changed here.
+            {t("users.editDesc")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label>Phone</Label>
-            <Input value={formatPhone(user?.phone) || "-"} dir="ltr" disabled />
+            <Label>{t("users.phone")}</Label>
+            <Input value={formatPhone(user?.phone) || "-"} dir="ltr" className="rtl:text-right" disabled />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="first_name">First Name</Label>
+              <Label htmlFor="first_name">{t("users.firstName")}</Label>
               <Input
                 id="first_name"
                 value={formData.first_name}
@@ -100,7 +102,7 @@ export function UserDialog({ open, onOpenChange, user, onSuccess }: UserDialogPr
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="last_name">Last Name</Label>
+              <Label htmlFor="last_name">{t("users.lastName")}</Label>
               <Input
                 id="last_name"
                 value={formData.last_name}
@@ -110,17 +112,19 @@ export function UserDialog({ open, onOpenChange, user, onSuccess }: UserDialogPr
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("users.email")}</Label>
             <Input
               id="email"
               type="email"
+              dir="ltr"
+              className="rtl:text-right"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               maxLength={255}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="address">Address</Label>
+            <Label htmlFor="address">{t("users.address")}</Label>
             <Textarea
               id="address"
               value={formData.address}
@@ -130,10 +134,10 @@ export function UserDialog({ open, onOpenChange, user, onSuccess }: UserDialogPr
           </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Saving..." : "Save"}
+              {loading ? t("common.saving") : t("common.save")}
             </Button>
           </div>
         </form>
