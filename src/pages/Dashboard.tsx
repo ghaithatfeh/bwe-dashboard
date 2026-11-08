@@ -6,16 +6,18 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { Outlet } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut } from "lucide-react";
+import { KeyRound, LogOut } from "lucide-react";
 import { isAdmin } from "@/lib/admin";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { PasswordDialog } from "@/components/admins/PasswordDialog";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
+  const [passwordOpen, setPasswordOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -64,6 +66,10 @@ const Dashboard = () => {
             <h1 className="text-xl font-semibold">{t("common.appName")}</h1>
             <div className="flex items-center gap-2">
               <LanguageSwitcher />
+              <Button variant="outline" size="sm" onClick={() => setPasswordOpen(true)}>
+                <KeyRound className="h-4 w-4 sm:me-2" />
+                <span className="hidden sm:inline">{t("password.changeOwn")}</span>
+              </Button>
               <Button variant="outline" size="sm" onClick={handleSignOut}>
                 <LogOut className="h-4 w-4 me-2 rtl:rotate-180" />
                 {t("nav.signOut")}
@@ -75,6 +81,7 @@ const Dashboard = () => {
           </main>
         </div>
       </div>
+      <PasswordDialog open={passwordOpen} onOpenChange={setPasswordOpen} />
     </SidebarProvider>
   );
 };

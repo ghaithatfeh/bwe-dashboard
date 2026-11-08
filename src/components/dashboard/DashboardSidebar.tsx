@@ -1,4 +1,4 @@
-import { LayoutDashboard, FolderTree, Package, ShoppingCart, Users } from "lucide-react";
+import { LayoutDashboard, FolderTree, Package, ShieldCheck, ShoppingCart, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "@/components/NavLink";
 import { useLanguage } from "@/i18n";
@@ -38,6 +38,11 @@ const menuItems = [
     titleKey: "nav.users",
     url: "/dashboard/users",
     icon: Users,
+  },
+  {
+    titleKey: "nav.admins",
+    url: "/dashboard/admins",
+    icon: ShieldCheck,
   },
 ] as const;
 

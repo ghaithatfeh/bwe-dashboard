@@ -1,4 +1,4 @@
-import { Ban, Edit, MoreHorizontal, ShieldCheck, ShieldOff, Trash2, Undo2 } from "lucide-react";
+import { Ban, Edit, MoreHorizontal, Trash2, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -31,10 +31,7 @@ const PROVIDER_LABELS: Record<string, string> = {
 interface UsersTableProps {
   users: AdminUser[];
   loading: boolean;
-  /** The signed-in admin; they cannot block, demote or delete themselves. */
-  currentUserId: string | null;
   onEdit: (user: AdminUser) => void;
-  onToggleAdmin: (user: AdminUser) => void;
   onToggleBanned: (user: AdminUser) => void;
   onDelete: (user: AdminUser) => void;
   emptyMessage?: string;
@@ -46,9 +43,7 @@ const formatDate = (value: string | null) =>
 export function UsersTable({
   users,
   loading,
-  currentUserId,
   onEdit,
-  onToggleAdmin,
   onToggleBanned,
   onDelete,
   emptyMessage,
@@ -82,14 +77,12 @@ export function UsersTable({
         </TableHeader>
         <TableBody>
           {users.map((user) => {
-            const isSelf = user.id === currentUserId;
             const name = `${user.first_name} ${user.last_name}`.trim();
 
             return (
               <TableRow key={user.id}>
                 <TableCell className="font-medium">
                   {name || <span className="text-muted-foreground">{t("users.noName")}</span>}
-                  {isSelf && <span className="text-muted-foreground">{t("users.you")}</span>}
                 </TableCell>
                 <TableCell dir="ltr" className="whitespace-nowrap">
                   {formatPhone(user.phone) || "-"}
@@ -108,11 +101,10 @@ export function UsersTable({
                 <TableCell className="whitespace-nowrap">{formatDate(user.last_sign_in_at)}</TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
-                    {user.is_admin && <Badge>{t("users.badgeAdmin")}</Badge>}
                     {user.banned ? (
                       <Badge variant="destructive">{t("users.badgeBlocked")}</Badge>
                     ) : (
-                      !user.is_admin && <Badge variant="secondary">{t("users.badgeActive")}</Badge>
+                      <Badge variant="secondary">{t("users.badgeActive")}</Badge>
                     )}
                   </div>
                 </TableCell>
@@ -126,26 +118,12 @@ export function UsersTable({
                         <Button
                           variant="outline"
                           size="sm"
-                          disabled={isSelf}
                           aria-label={t("common.moreActions")}
                         >
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onToggleAdmin(user)}>
-                          {user.is_admin ? (
-                            <>
-                              <ShieldOff className="h-4 w-4 me-2" />
-                              {t("users.removeAdmin")}
-                            </>
-                          ) : (
-                            <>
-                              <ShieldCheck className="h-4 w-4 me-2" />
-                              {t("users.makeAdmin")}
-                            </>
-                          )}
-                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => onToggleBanned(user)}>
                           {user.banned ? (
                             <>

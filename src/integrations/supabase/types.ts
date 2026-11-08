@@ -300,6 +300,19 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: undefined
       }
+      admin_list_admins: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          active: boolean
+          created_at: string
+          email: string | null
+          first_name: string
+          id: string
+          is_super_admin: boolean
+          last_name: string
+          last_sign_in_at: string | null
+        }[]
+      }
       admin_list_users: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -309,7 +322,6 @@ export type Database = {
           email: string | null
           first_name: string
           id: string
-          is_admin: boolean
           last_name: string
           last_sign_in_at: string | null
           phone: string | null
@@ -327,8 +339,12 @@ export type Database = {
         }
         Returns: undefined
       }
-      admin_set_user_admin: {
-        Args: { make_admin: boolean; target_user_id: string }
+      admin_revoke_sessions: {
+        Args: { target_user_id: string }
+        Returns: undefined
+      }
+      admin_set_admin_active: {
+        Args: { active: boolean; target_user_id: string }
         Returns: undefined
       }
       admin_set_user_banned: {
@@ -336,6 +352,10 @@ export type Database = {
         Returns: undefined
       }
       is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_super_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }

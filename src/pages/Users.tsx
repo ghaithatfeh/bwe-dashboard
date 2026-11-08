@@ -29,7 +29,6 @@ const matchesSearch = (user: AdminUser, query: string) => {
 const Users = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
@@ -53,7 +52,6 @@ const Users = () => {
   };
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id ?? null));
     fetchUsers();
   }, []);
 
@@ -104,19 +102,6 @@ const Users = () => {
   const handleEdit = (user: AdminUser) => {
     setEditingUser(user);
     setDialogOpen(true);
-  };
-
-  const handleToggleAdmin = (user: AdminUser) => {
-    const makeAdmin = !user.is_admin;
-    const question = makeAdmin
-      ? t("users.confirmMakeAdmin", { name: displayName(user) })
-      : t("users.confirmRemoveAdmin", { name: displayName(user) });
-    if (!confirm(question)) return;
-
-    runAction(
-      () => supabase.rpc("admin_set_user_admin", { target_user_id: user.id, make_admin: makeAdmin }),
-      makeAdmin ? t("users.nowAdmin") : t("users.adminRemoved"),
-    );
   };
 
   const handleToggleBanned = (user: AdminUser) => {
@@ -172,9 +157,7 @@ const Users = () => {
       <UsersTable
         users={paginatedItems}
         loading={loading}
-        currentUserId={currentUserId}
         onEdit={handleEdit}
-        onToggleAdmin={handleToggleAdmin}
         onToggleBanned={handleToggleBanned}
         onDelete={handleDelete}
         emptyMessage={
