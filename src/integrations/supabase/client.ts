@@ -11,6 +11,9 @@ const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     storage: localStorage,
+    // The website shares this domain and Supabase project; a separate key keeps
+    // the admin session from overwriting a visitor's website session.
+    storageKey: "bwe-dashboard-auth",
     persistSession: true,
     autoRefreshToken: true,
   }

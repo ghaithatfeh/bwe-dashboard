@@ -29,7 +29,8 @@ const Auth = () => {
         return;
       }
 
-      await supabase.auth.signOut();
+      // Local only: the same account may stay signed in on the website.
+      await supabase.auth.signOut({ scope: "local" });
       toast({
         variant: "destructive",
         title: i18n.t("auth.accessDenied"),

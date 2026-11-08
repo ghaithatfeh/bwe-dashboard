@@ -25,7 +25,7 @@ const Dashboard = () => {
         setLoading(false);
       } else {
         // The sign-out triggers the redirect to /auth below.
-        await supabase.auth.signOut();
+        await supabase.auth.signOut({ scope: "local" });
       }
     });
 
