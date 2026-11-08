@@ -191,6 +191,8 @@ const ar: Translations<typeof en> = {
     noneInStatus: "لا توجد طلبات بحالة «{{status}}».",
     loading: "جارٍ تحميل الطلبات...",
     confirmCancel: "هل تريد إلغاء الطلب رقم {{id}} من {{name}}؟",
+    confirmRestore: "هل تريد استعادة الطلب رقم {{id}} من {{name}}؟ سيعود إلى الحالة التي كان عليها قبل الإلغاء.",
+    restore: "استعادة الطلب",
     statusUpdated: "أصبحت حالة الطلب رقم {{id}}: {{status}}",
     priceUpdated: "تم تحديث سعر {{code}}",
     order: "الطلب",

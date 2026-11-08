@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowRight, XCircle } from "lucide-react";
+import { ArrowRight, RotateCcw, XCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -40,10 +40,11 @@ interface OrderDialogProps {
   onOpenChange: (open: boolean) => void;
   order: OrderWithItems | null;
   onSetStatus: (order: OrderWithItems, status: OrderStatus) => void;
+  onRestore: (order: OrderWithItems) => void;
   onSetPrice: (item: OrderItem, price: number) => Promise<boolean>;
 }
 
-export function OrderDialog({ open, onOpenChange, order, onSetStatus, onSetPrice }: OrderDialogProps) {
+export function OrderDialog({ open, onOpenChange, order, onSetStatus, onRestore, onSetPrice }: OrderDialogProps) {
   const { t } = useTranslation();
   const { lang } = useLanguage();
   // Draft prices per item id, as typed.
@@ -219,6 +220,12 @@ export function OrderDialog({ open, onOpenChange, order, onSetStatus, onSetPrice
         )}
 
         <DialogFooter>
+          {order.status === "cancelled" && (
+            <Button variant="outline" onClick={() => onRestore(order)}>
+              <RotateCcw className="h-4 w-4 me-2" />
+              {t("orders.restore")}
+            </Button>
+          )}
           {canCancel(order.status) && (
             <Button variant="outline" className="text-destructive" onClick={() => onSetStatus(order, "cancelled")}>
               <XCircle className="h-4 w-4 me-2" />

@@ -1,4 +1,4 @@
-import { ArrowRight, Eye, MoreHorizontal, XCircle } from "lucide-react";
+import { ArrowRight, Eye, MoreHorizontal, RotateCcw, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -35,6 +35,7 @@ interface OrdersTableProps {
   loading: boolean;
   onView: (order: OrderWithItems) => void;
   onSetStatus: (order: OrderWithItems, status: OrderStatus) => void;
+  onRestore: (order: OrderWithItems) => void;
   emptyMessage?: string;
 }
 
@@ -43,6 +44,7 @@ export function OrdersTable({
   loading,
   onView,
   onSetStatus,
+  onRestore,
   emptyMessage,
 }: OrdersTableProps) {
   const { t } = useTranslation();
@@ -112,7 +114,7 @@ export function OrdersTable({
                         <Button
                           variant="outline"
                           size="sm"
-                          disabled={!next && !canCancel(order.status)}
+                          disabled={!next && !canCancel(order.status) && order.status !== "cancelled"}
                           aria-label={t("common.moreActions")}
                         >
                           <MoreHorizontal className="h-4 w-4" />
@@ -140,6 +142,12 @@ export function OrdersTable({
                               {t("orders.actions.cancelled")}
                             </DropdownMenuItem>
                           </>
+                        )}
+                        {order.status === "cancelled" && (
+                          <DropdownMenuItem onClick={() => onRestore(order)}>
+                            <RotateCcw className="h-4 w-4 me-2" />
+                            {t("orders.restore")}
+                          </DropdownMenuItem>
                         )}
                       </DropdownMenuContent>
                     </DropdownMenu>

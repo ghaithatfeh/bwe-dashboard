@@ -118,6 +118,7 @@ export type Database = {
       orders: {
         Row: {
           address: string
+          cancelled_from: Database["public"]["Enums"]["order_status"] | null
           created_at: string
           customer_name: string
           id: number
@@ -130,6 +131,7 @@ export type Database = {
         }
         Insert: {
           address: string
+          cancelled_from?: Database["public"]["Enums"]["order_status"] | null
           created_at?: string
           customer_name: string
           id?: never
@@ -142,6 +144,7 @@ export type Database = {
         }
         Update: {
           address?: string
+          cancelled_from?: Database["public"]["Enums"]["order_status"] | null
           created_at?: string
           customer_name?: string
           id?: never
@@ -338,6 +341,10 @@ export type Database = {
           p_status: Database["public"]["Enums"]["order_status"]
         }
         Returns: undefined
+      }
+      admin_restore_order: {
+        Args: { p_order_id: number }
+        Returns: Database["public"]["Enums"]["order_status"]
       }
       admin_revoke_sessions: {
         Args: { target_user_id: string }

@@ -127,6 +127,26 @@ const Orders = () => {
     }
   };
 
+  const handleRestore = async (order: OrderWithItems) => {
+    if (!confirm(t("orders.confirmRestore", { id: order.id, name: order.customer_name }))) return;
+
+    const { data: restored, error } = await supabase.rpc("admin_restore_order", { p_order_id: order.id });
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: t("common.error"),
+        description: error.message,
+      });
+    } else {
+      toast({
+        title: t("common.success"),
+        description: t("orders.statusUpdated", { id: order.id, status: t(`orders.statuses.${restored}`).toLowerCase() }),
+      });
+      fetchOrders(false);
+    }
+  };
+
   const handleSetPrice = async (item: OrderItem, price: number) => {
     const { error } = await supabase.rpc("admin_set_order_item_price", {
       p_item_id: item.id,
@@ -208,6 +228,7 @@ const Orders = () => {
         loading={loading}
         onView={handleView}
         onSetStatus={handleSetStatus}
+        onRestore={handleRestore}
         emptyMessage={emptyMessage}
       />
 
@@ -229,6 +250,7 @@ const Orders = () => {
         onOpenChange={setDialogOpen}
         order={viewingOrder}
         onSetStatus={handleSetStatus}
+        onRestore={handleRestore}
         onSetPrice={handleSetPrice}
       />
     </div>

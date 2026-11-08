@@ -180,6 +180,8 @@ const en = {
     noneInStatus: "No {{status}} orders.",
     loading: "Loading orders...",
     confirmCancel: "Cancel order #{{id}} from {{name}}?",
+    confirmRestore: "Restore order #{{id}} from {{name}}? It goes back to the status it had before it was cancelled.",
+    restore: "Restore order",
     statusUpdated: "Order #{{id}} is now {{status}}",
     priceUpdated: "Price updated for {{code}}",
     order: "Order",
